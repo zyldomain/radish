@@ -1,4 +1,4 @@
-package channel
+package iface
 
 type Channel interface {
 	FD() int
@@ -14,5 +14,5 @@ type Channel interface {
 
 	Pipeline() Pipeline
 
-	SetEventLoop(eventLoop *EpollEventLoop)
+	SetEventLoop(eventLoop EventLoop)
 }

@@ -11,11 +11,10 @@ type EpollServerSocketChannel struct {
 
 func NewEpollServerSocketChannel(address string) *EpollServerSocketChannel {
 
-	addr, _ := net.ResolveTCPAddr("tcp4", address)
-	ln, _ := net.ListenTCP("tcp4", addr)
+	ln, _ := net.Listen("tcp", address)
 	//fd, err := unix.Socket(syscall.AF_INET, syscall.SOCK_STREAM, 0)
-	f, _ := ln.File()
-
+	l, _ := ln.(*net.TCPListener)
+	f, _ := l.File()
 	epchannel := &EpollChannel{
 		fd: int(f.Fd()),
 	}
@@ -24,7 +23,6 @@ func NewEpollServerSocketChannel(address string) *EpollServerSocketChannel {
 		EpollChannel: epchannel,
 		address:      address,
 	}
-
 	ssChannel.unsafe = NewMessageUnsafe(ssChannel)
 	ssChannel.pipeline = NewDefaultChannelPipeline(ssChannel)
 

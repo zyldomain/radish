@@ -1,8 +1,8 @@
-package channel
+package iface
 
 type Pipeline interface {
 	AddLast(handler ChannelHandler) Pipeline
-	Tail() *ChannelHandlerContext
+	Tail() ChannelHandlerContextInvoker
 	Channel() Channel
 	ChannelRead(msg interface{})
 	Write(msg interface{})

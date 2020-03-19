@@ -3,20 +3,21 @@ package channel
 import (
 	"golang.org/x/sys/unix"
 	"net"
+	"radish/channel/iface"
 	"radish/channel/util"
 )
 
 type ByteUnsafe struct {
-	channel Channel
+	channel iface.Channel
 }
 
-func NewByteUnsafe(channel Channel) *ByteUnsafe {
+func NewByteUnsafe(channel iface.Channel) *ByteUnsafe {
 	return &ByteUnsafe{channel: channel}
 }
 
 func (b *ByteUnsafe) Read(links *util.ArrayList) {
 	for {
-		buf := make([]byte, 1024*1024)
+		buf := make([]byte, 1024)
 		_, err := unix.Read(b.channel.FD(), buf)
 		if err != nil {
 			if err == unix.EAGAIN {

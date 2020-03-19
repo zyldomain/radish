@@ -2,15 +2,16 @@ package channel
 
 import (
 	"golang.org/x/sys/unix"
+	"radish/channel/iface"
 )
 
 type EpollChannel struct {
 	fd        int
-	pipeline  Pipeline
+	pipeline  iface.Pipeline
 	sa        unix.Sockaddr
-	unsafe    Unsafe
+	unsafe    iface.Unsafe
 	active    bool
-	eventloop *EpollEventLoop
+	eventloop iface.EventLoop
 }
 
 func NewEpollChannel(fd int, sa unix.Sockaddr) *EpollChannel {
@@ -43,7 +44,7 @@ func (ec *EpollChannel) ChannelInActive(msg interface{}) {
 	ec.pipeline.ChannelInActive(msg)
 }
 
-func (ec *EpollChannel) Unsafe() Unsafe {
+func (ec *EpollChannel) Unsafe() iface.Unsafe {
 	return ec.unsafe
 }
 
@@ -55,14 +56,14 @@ func (ec *EpollChannel) Bind(address string) {
 	ec.pipeline.Bind(address)
 }
 
-func (ec *EpollChannel) Pipeline() Pipeline {
+func (ec *EpollChannel) Pipeline() iface.Pipeline {
 	return ec.pipeline
 }
 
-func (ec *EpollChannel) SetEventLoop(eventLoop *EpollEventLoop) {
+func (ec *EpollChannel) SetEventLoop(eventLoop iface.EventLoop) {
 	ec.eventloop = eventLoop
 }
 
-func (ec *EpollChannel) EventLoop() *EpollEventLoop {
+func (ec *EpollChannel) EventLoop() iface.EventLoop {
 	return ec.eventloop
 }

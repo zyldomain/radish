@@ -2,27 +2,28 @@ package channel
 
 import (
 	"errors"
+	"radish/channel/iface"
 )
 
 type HeadHandler struct {
-	unsafe Unsafe
+	unsafe iface.Unsafe
 }
 
-func NewHeadContext(pipeline Pipeline) *ChannelHandlerContext {
+func NewHeadContext(pipeline iface.Pipeline) iface.ChannelHandlerContextInvoker {
 	ctx := NewChannelHandlerContext(pipeline, &HeadHandler{
 		unsafe: pipeline.Channel().Unsafe(),
 	})
 	return ctx
 }
 
-func (h *HeadHandler) ChannelHandlerAdded(ctx *ChannelHandlerContext) {
+func (h *HeadHandler) ChannelHandlerAdded(ctx iface.ChannelHandlerContextInvoker) {
 
 }
-func (h *HeadHandler) ChannelHandlerRemoved(ctx *ChannelHandlerContext) {
+func (h *HeadHandler) ChannelHandlerRemoved(ctx iface.ChannelHandlerContextInvoker) {
 
 }
 
-func (h *HeadHandler) Write(ctx *ChannelHandlerContext, msg interface{}) {
+func (h *HeadHandler) Write(ctx iface.ChannelHandlerContextInvoker, msg interface{}) {
 
 	buf, ok := msg.([]byte)
 
@@ -32,6 +33,6 @@ func (h *HeadHandler) Write(ctx *ChannelHandlerContext, msg interface{}) {
 	h.unsafe.Write(buf)
 }
 
-func (h *HeadHandler) Bind(ctx *ChannelHandlerContext, address string) {
+func (h *HeadHandler) Bind(ctx iface.ChannelHandlerContextInvoker, address string) {
 	h.unsafe.Bind(address)
 }

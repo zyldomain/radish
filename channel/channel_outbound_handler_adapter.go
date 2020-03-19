@@ -1,19 +1,21 @@
 package channel
 
+import "radish/channel/iface"
+
 type ChannelOutboundHandlerAdapter struct {
 }
 
-func (a *ChannelOutboundHandlerAdapter) Write(ctx *ChannelHandlerContext, msg interface{}) {
+func (a *ChannelOutboundHandlerAdapter) Write(ctx iface.ChannelHandlerContextInvoker, msg interface{}) {
 	ctx.Write(msg)
 }
-func (a *ChannelOutboundHandlerAdapter) Bind(ctx *ChannelHandlerContext, address string) {
+func (a *ChannelOutboundHandlerAdapter) Bind(ctx iface.ChannelHandlerContextInvoker, address string) {
 	ctx.Bind(address)
 }
 
-func (a *ChannelOutboundHandlerAdapter) ChannelHandlerAdded(ctx *ChannelHandlerContext) {
+func (a *ChannelOutboundHandlerAdapter) ChannelHandlerAdded(ctx iface.ChannelHandlerContextInvoker) {
 
 }
 
-func (a *ChannelOutboundHandlerAdapter) ChannelHandlerRemoved(ctx *ChannelHandlerContext) {
+func (a *ChannelOutboundHandlerAdapter) ChannelHandlerRemoved(ctx iface.ChannelHandlerContextInvoker) {
 
 }

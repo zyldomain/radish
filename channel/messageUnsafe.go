@@ -3,14 +3,15 @@ package channel
 import (
 	"golang.org/x/sys/unix"
 	"net"
+	"radish/channel/iface"
 	"radish/channel/util"
 )
 
 type MessageUnsafe struct {
-	channel Channel
+	channel iface.Channel
 }
 
-func NewMessageUnsafe(channel Channel) *MessageUnsafe {
+func NewMessageUnsafe(channel iface.Channel) *MessageUnsafe {
 	return &MessageUnsafe{channel: channel}
 }
 
@@ -24,7 +25,7 @@ func (u *MessageUnsafe) Read(links *util.ArrayList) {
 				panic(err)
 			}
 		}
-
+		unix.SetNonblock(nfd, true)
 		c := NewEpollChannel(nfd, sa)
 
 		links.Add(c)

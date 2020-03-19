@@ -1,25 +1,27 @@
 package channel
 
+import "radish/channel/iface"
+
 type TailHandler struct {
 }
 
-func NewTailContext(pipeline Pipeline) *ChannelHandlerContext {
+func NewTailContext(pipeline iface.Pipeline) iface.ChannelHandlerContextInvoker {
 	ctx := NewChannelHandlerContext(pipeline, &TailHandler{})
 	return ctx
 }
 
-func (h *TailHandler) ChannelHandlerAdded(ctx *ChannelHandlerContext) {
+func (h *TailHandler) ChannelHandlerAdded(ctx iface.ChannelHandlerContextInvoker) {
 
 }
-func (h *TailHandler) ChannelHandlerRemoved(ctx *ChannelHandlerContext) {
+func (h *TailHandler) ChannelHandlerRemoved(ctx iface.ChannelHandlerContextInvoker) {
 
 }
-func (h *TailHandler) ChannelRead(ctx *ChannelHandlerContext, msg interface{}) {
+func (h *TailHandler) ChannelRead(ctx iface.ChannelHandlerContextInvoker, msg interface{}) {
 
 }
-func (h *TailHandler) ChannelActive(ctx *ChannelHandlerContext, msg interface{}) {
+func (h *TailHandler) ChannelActive(ctx iface.ChannelHandlerContextInvoker, msg interface{}) {
 
 }
-func (h *TailHandler) ChannelInActive(ctx *ChannelHandlerContext, msg interface{}) {
+func (h *TailHandler) ChannelInActive(ctx iface.ChannelHandlerContextInvoker, msg interface{}) {
 
 }

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"golang.org/x/sys/unix"
 	"radish/channel"
+	"radish/channel/iface"
 	"sync"
 )
 
@@ -12,9 +13,9 @@ type Bootstrap struct {
 
 	parentGroup *channel.EpollEventGroup
 
-	childHandler channel.ChannelHandler
+	childHandler iface.ChannelHandler
 
-	parentHandler channel.ChannelHandler
+	parentHandler iface.ChannelHandler
 
 	wg sync.WaitGroup
 }
@@ -34,12 +35,12 @@ func (b *Bootstrap) ParentGroup(pg *channel.EpollEventGroup) *Bootstrap {
 	return b
 }
 
-func (b *Bootstrap) ChildHandler(handler channel.ChannelHandler) *Bootstrap {
+func (b *Bootstrap) ChildHandler(handler iface.ChannelHandler) *Bootstrap {
 	b.childHandler = handler
 	return b
 }
 
-func (b *Bootstrap) ParentHandler(handler channel.ChannelHandler) *Bootstrap {
+func (b *Bootstrap) ParentHandler(handler iface.ChannelHandler) *Bootstrap {
 	b.parentHandler = handler
 
 	return b

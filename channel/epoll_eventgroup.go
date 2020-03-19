@@ -12,7 +12,7 @@ func NewEpollEventGroup(size int) *EpollEventGroup {
 	loops := make([]*EpollEventLoop, size)
 
 	for i := 0; i < len(loops); i++ {
-		l, err := NewEpollEventLoop()
+		l, err := NewEpollEventLoop(int64(i))
 
 		if err != nil {
 			for j := 0; j < i; j++ {

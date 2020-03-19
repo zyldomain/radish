@@ -1,12 +1,14 @@
 package channel
 
+import "radish/channel/iface"
+
 type DefaultChannelPipeline struct {
 	head    *ChannelHandlerContext
 	tail    *ChannelHandlerContext
-	channel Channel
+	channel iface.Channel
 }
 
-func NewDefaultChannelPipeline(channel Channel) *DefaultChannelPipeline {
+func NewDefaultChannelPipeline(channel iface.Channel) *DefaultChannelPipeline {
 
 	p := &DefaultChannelPipeline{
 		head:    nil,
@@ -19,7 +21,7 @@ func NewDefaultChannelPipeline(channel Channel) *DefaultChannelPipeline {
 	return p
 }
 
-func (d *DefaultChannelPipeline) AddLast(handler ChannelHandler) Pipeline {
+func (d *DefaultChannelPipeline) AddLast(handler iface.ChannelHandler) iface.Pipeline {
 	ctx := NewChannelHandlerContext(d, handler)
 	d.addLast0(ctx)
 
@@ -28,7 +30,9 @@ func (d *DefaultChannelPipeline) AddLast(handler ChannelHandler) Pipeline {
 	return d
 }
 
-func (d *DefaultChannelPipeline) addLast0(ctx *ChannelHandlerContext) {
+func (d *DefaultChannelPipeline) addLast0(c iface.ChannelHandlerContextInvoker) {
+
+	ctx, _ := c.(*ChannelHandlerContext)
 	if d.head == nil {
 		d.head = ctx
 		d.tail = ctx
@@ -46,10 +50,10 @@ func (d *DefaultChannelPipeline) addLast0(ctx *ChannelHandlerContext) {
 
 }
 
-func (d *DefaultChannelPipeline) Tail() *ChannelHandlerContext {
+func (d *DefaultChannelPipeline) Tail() iface.ChannelHandlerContextInvoker {
 	return d.tail
 }
-func (d *DefaultChannelPipeline) Channel() Channel {
+func (d *DefaultChannelPipeline) Channel() iface.Channel {
 	return d.channel
 }
 func (d *DefaultChannelPipeline) ChannelRead(msg interface{}) {

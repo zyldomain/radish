@@ -1,13 +1,15 @@
 package channel
 
 import (
+	"fmt"
 	"golang.org/x/sys/unix"
+	"radish/channel/iface"
 	"radish/channel/util"
 	"sync"
 )
 
 type EpollEventLoop struct {
-	selector Selector
+	selector iface.Selector
 	tasks    *util.TaskList
 	id       int64
 	stop     bool
@@ -16,7 +18,7 @@ type EpollEventLoop struct {
 	lock sync.RWMutex
 }
 
-func NewEpollEventLoop() (*EpollEventLoop, error) {
+func NewEpollEventLoop(id int64) (*EpollEventLoop, error) {
 	s, err := OpenEpollSelector()
 	if err != nil {
 		return nil, err
@@ -26,6 +28,7 @@ func NewEpollEventLoop() (*EpollEventLoop, error) {
 		tasks:    util.NewTaskList(),
 		stop:     true,
 		running:  false,
+		id:       id,
 	}, err
 }
 
@@ -46,12 +49,12 @@ func (e *EpollEventLoop) StartWork() {
 		for e.running {
 
 			e.runAllTasks()
-
 			//t := time.Now().Add(2 * time.Second)
 			//_, _ := unix.TimeToTimespec(t)
 			keys, err := e.selector.Select()
 			if err != nil {
-				e.reBuildSelector()
+				//e.reBuildSelector()
+				fmt.Println(err)
 			}
 			e.processKeys(keys)
 		}
@@ -78,13 +81,12 @@ func (e *EpollEventLoop) AddTask(task *util.Task) {
 	e.tasks.Add(task)
 }
 
-func (e *EpollEventLoop) processKeys(keys []Key) {
+func (e *EpollEventLoop) processKeys(keys []iface.Key) {
 	for _, key := range keys {
 		if key.Filter == unix.EVFILT_READ {
 			list := util.NewArrayList()
 
 			key.Channel.Unsafe().Read(list)
-
 			for _, o := range list.Iterator() {
 				key.Channel.Read(o)
 			}
@@ -97,7 +99,7 @@ func (e *EpollEventLoop) processKeys(keys []Key) {
 	}
 }
 
-func (e *EpollEventLoop) Register(channel Channel, interests []int16) {
+func (e *EpollEventLoop) Register(channel iface.Channel, interests []int16) {
 
 	channel.SetEventLoop(e)
 	doRegister := func() {

@@ -1,22 +1,26 @@
 package channel
 
+import "radish/channel/iface"
+
 type ChannelInitializer struct {
 	*ChannelInboundHandlerAdapter
-	initChannel func(pipeline Pipeline)
+	initChannel func(pipeline iface.Pipeline)
 }
 
-func (ci *ChannelInitializer) ChannelHandlerAdded(ctx *ChannelHandlerContext) {
+func NewChannelInitializer(initChannel func(pipeline iface.Pipeline)) iface.ChannelHandler {
+	return &ChannelInitializer{
+		initChannel: initChannel,
+	}
+}
+
+func (ci *ChannelInitializer) ChannelHandlerAdded(ctx iface.ChannelHandlerContextInvoker) {
+	c, _ := ctx.(*ChannelHandlerContext)
 	ci.initChannel(ctx.Pipeline())
 
-	ctx.prev.next = ctx.next
+	c.prev.next = c.next
 
-	ctx.next.prev = ctx.prev
+	c.next.prev = c.prev
 
-	ctx.next = nil
-	ctx.prev = nil
-}
-
-func (ci *ChannelInitializer) SetInit(init func(pipeline Pipeline)) *ChannelInitializer {
-	ci.initChannel = init
-	return ci
+	c.next = nil
+	c.prev = nil
 }

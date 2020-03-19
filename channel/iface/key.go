@@ -1,5 +1,4 @@
-package channel
-
+package iface
 
 type Key struct {
 	Channel Channel

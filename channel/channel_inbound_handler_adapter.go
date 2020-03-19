@@ -1,20 +1,22 @@
 package channel
 
+import "radish/channel/iface"
+
 type ChannelInboundHandlerAdapter struct {
 }
 
-func (a *ChannelInboundHandlerAdapter) ChannelRead(ctx *ChannelHandlerContext, msg interface{}) {
+func (a *ChannelInboundHandlerAdapter) ChannelRead(ctx iface.ChannelHandlerContextInvoker, msg interface{}) {
 	ctx.FireChannelRead(msg)
 }
-func (a *ChannelInboundHandlerAdapter) ChannelActive(ctx *ChannelHandlerContext, msg interface{}) {
+func (a *ChannelInboundHandlerAdapter) ChannelActive(ctx iface.ChannelHandlerContextInvoker, msg interface{}) {
 	ctx.FireChannelActive(msg)
 }
-func (a *ChannelInboundHandlerAdapter) ChannelInActive(ctx *ChannelHandlerContext, msg interface{}) {
+func (a *ChannelInboundHandlerAdapter) ChannelInActive(ctx iface.ChannelHandlerContextInvoker, msg interface{}) {
 	ctx.FireChannelInActive(msg)
 }
-func (a *ChannelInboundHandlerAdapter) ChannelHandlerAdded(ctx *ChannelHandlerContext) {
+func (a *ChannelInboundHandlerAdapter) ChannelHandlerAdded(ctx iface.ChannelHandlerContextInvoker) {
 
 }
-func (a *ChannelInboundHandlerAdapter) ChannelHandlerRemoved(ctx *ChannelHandlerContext) {
+func (a *ChannelInboundHandlerAdapter) ChannelHandlerRemoved(ctx iface.ChannelHandlerContextInvoker) {
 
 }

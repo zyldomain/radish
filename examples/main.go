@@ -1,16 +1,11 @@
-# radish
+package main
 
-## 快速使用
+import (
+	"fmt"
+	"radish/channel"
+	"radish/core"
+)
 
-### 导入开发包
-
-```shell
-go get github.com/zyldomain/radish
-```
-
-### 自定义服务端Handler
-
-```go
 type PrintHandler struct {
 	channel.ChannelInboundHandlerAdapter
 }
@@ -26,21 +21,11 @@ func (p *PrintHandler) ChannelRead(ctx *channel.ChannelHandlerContext, msg inter
 
 	ctx.Write([]byte("服务端的消息-> " + string(b) + "\n"))
 }
-```
 
-
-
-### 开启服务端
-
-```go
+func main() {
 	cg := channel.NewEpollEventGroup(4)
 	pg := channel.NewEpollEventGroup(4)
 
 	b := core.NewBootstrap().ParentGroup(pg).ChildGroup(cg).ChildHandler(&PrintHandler{})
 	b.Bind("localhost:8080").Sync()
-```
-
-### 执行效果
-
-![image-20200319122920875](/Users/zhaoyinlong/Library/Application Support/typora-user-images/image-20200319122920875.png)
-
+}

@@ -42,5 +42,4 @@ func (p *PrintHandler) ChannelRead(ctx *channel.ChannelHandlerContext, msg inter
 
 ### 执行效果
 
-![image-20200319122920875](/Users/zhaoyinlong/Library/Application Support/typora-user-images/image-20200319122920875.png)
-
+![image-20200319123927285](http://github.com/zyldomain/radish/image-20200319123927285.png)

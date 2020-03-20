@@ -1,7 +1,8 @@
-package channel
+package epoll
 
 import (
 	"net"
+	"radish/channel/pipeline"
 )
 
 type EpollServerSocketChannel struct {
@@ -24,7 +25,7 @@ func NewEpollServerSocketChannel(address string) *EpollServerSocketChannel {
 		address:      address,
 	}
 	ssChannel.unsafe = NewMessageUnsafe(ssChannel)
-	ssChannel.pipeline = NewDefaultChannelPipeline(ssChannel)
+	ssChannel.pipeline = pipeline.NewDefaultChannelPipeline(ssChannel)
 
 	return ssChannel
 }

@@ -1,4 +1,4 @@
-package channel
+package epoll
 
 import (
 	"golang.org/x/sys/unix"
@@ -25,7 +25,6 @@ func (u *MessageUnsafe) Read(links *util.ArrayList) {
 				panic(err)
 			}
 		}
-		unix.SetNonblock(nfd, true)
 		c := NewEpollChannel(nfd, sa)
 
 		links.Add(c)

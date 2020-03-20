@@ -1,4 +1,4 @@
-package channel
+package pipeline
 
 import "radish/channel/iface"
 

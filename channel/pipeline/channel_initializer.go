@@ -1,6 +1,8 @@
-package channel
+package pipeline
 
-import "radish/channel/iface"
+import (
+	"radish/channel/iface"
+)
 
 type ChannelInitializer struct {
 	*ChannelInboundHandlerAdapter

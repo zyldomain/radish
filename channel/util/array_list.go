@@ -47,3 +47,6 @@ func (a *ArrayList) Get(index int) interface{} {
 func (a *ArrayList) Iterator() []interface{} {
 	return a.elems[:a.size]
 }
+func (a *ArrayList) Size() int {
+	return a.size
+}

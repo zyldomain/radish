@@ -1,8 +1,9 @@
-package channel
+package epoll
 
 import (
 	"golang.org/x/sys/unix"
 	"radish/channel/iface"
+	"radish/channel/pipeline"
 )
 
 type EpollChannel struct {
@@ -20,7 +21,7 @@ func NewEpollChannel(fd int, sa unix.Sockaddr) *EpollChannel {
 		sa: sa,
 	}
 	epchannel.unsafe = NewByteUnsafe(epchannel)
-	epchannel.pipeline = NewDefaultChannelPipeline(epchannel)
+	epchannel.pipeline = pipeline.NewDefaultChannelPipeline(epchannel)
 
 	return epchannel
 }

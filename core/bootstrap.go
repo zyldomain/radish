@@ -4,14 +4,15 @@ import (
 	"errors"
 	"golang.org/x/sys/unix"
 	"radish/channel"
+	"radish/channel/epoll"
 	"radish/channel/iface"
 	"sync"
 )
 
 type Bootstrap struct {
-	childGroup *channel.EpollEventGroup
+	childGroup iface.EventGroup
 
-	parentGroup *channel.EpollEventGroup
+	parentGroup iface.EventGroup
 
 	childHandler iface.ChannelHandler
 
@@ -24,13 +25,13 @@ func NewBootstrap() *Bootstrap {
 	return &Bootstrap{}
 }
 
-func (b *Bootstrap) ChildGroup(cg *channel.EpollEventGroup) *Bootstrap {
+func (b *Bootstrap) ChildGroup(cg iface.EventGroup) *Bootstrap {
 	b.childGroup = cg
 
 	return b
 }
 
-func (b *Bootstrap) ParentGroup(pg *channel.EpollEventGroup) *Bootstrap {
+func (b *Bootstrap) ParentGroup(pg iface.EventGroup) *Bootstrap {
 	b.parentGroup = pg
 	return b
 }
@@ -51,7 +52,7 @@ func (b *Bootstrap) Bind(address string) *Bootstrap {
 	if b.childGroup == nil || b.parentGroup == nil {
 		panic(errors.New("no executor "))
 	}
-	ssc := channel.NewEpollServerSocketChannel(address)
+	ssc := epoll.NewEpollServerSocketChannel(address)
 
 	if b.parentHandler != nil {
 		ssc.Pipeline().AddLast(b.parentHandler)

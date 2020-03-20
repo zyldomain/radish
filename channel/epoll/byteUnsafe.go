@@ -1,6 +1,7 @@
-package channel
+package epoll
 
 import (
+	"fmt"
 	"golang.org/x/sys/unix"
 	"net"
 	"radish/channel/iface"
@@ -18,16 +19,16 @@ func NewByteUnsafe(channel iface.Channel) *ByteUnsafe {
 func (b *ByteUnsafe) Read(links *util.ArrayList) {
 	for {
 		buf := make([]byte, 1024)
-		_, err := unix.Read(b.channel.FD(), buf)
-		if err != nil {
+		n, err := unix.Read(b.channel.FD(), buf)
+		if err != nil || n == 0 {
 			if err == unix.EAGAIN {
+				fmt.Println("unix.EAGAIN", links.Size())
 				return
-			} else {
-				//panic(err)
 			}
+			fmt.Println("error : " + err.Error())
+			unix.Close(b.channel.FD())
 		}
-
-		links.Add(buf)
+		links.Add(buf[:n])
 	}
 
 }

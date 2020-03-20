@@ -2,13 +2,14 @@ package main
 
 import (
 	"fmt"
-	"radish/channel"
+	"radish/channel/epoll"
 	"radish/channel/iface"
+	"radish/channel/pipeline"
 	"radish/core"
 )
 
 type PrintHandler struct {
-	channel.ChannelInboundHandlerAdapter
+	pipeline.ChannelInboundHandlerAdapter
 }
 
 func (p *PrintHandler) ChannelRead(ctx iface.ChannelHandlerContextInvoker, msg interface{}) {
@@ -19,12 +20,12 @@ func (p *PrintHandler) ChannelRead(ctx iface.ChannelHandlerContextInvoker, msg i
 		return
 	}
 
-	fmt.Println("客户端发送消息-> " + string(b))
+	fmt.Print(b, "客户端发送消息-> "+string(b), len(b), "\n")
 	ctx.FireChannelRead(msg)
 }
 
 type ConvertHandler struct {
-	channel.ChannelInboundHandlerAdapter
+	pipeline.ChannelInboundHandlerAdapter
 }
 
 func (p *ConvertHandler) ChannelRead(ctx iface.ChannelHandlerContextInvoker, msg interface{}) {
@@ -41,13 +42,13 @@ func (p *ConvertHandler) ChannelRead(ctx iface.ChannelHandlerContextInvoker, msg
 
 func main() {
 
-	cg := channel.NewEpollEventGroup(4)
-	pg := channel.NewEpollEventGroup(4)
+	cg := epoll.NewEpollEventGroup(4)
+	pg := epoll.NewEpollEventGroup(4)
 
 	b := core.NewBootstrap().
 		ParentGroup(pg).
 		ChildGroup(cg).
-		ChildHandler(channel.NewChannelInitializer(
+		ChildHandler(pipeline.NewChannelInitializer(
 			func(pipeline iface.Pipeline) {
 				pipeline.AddLast(&PrintHandler{})
 				pipeline.AddLast(&ConvertHandler{})

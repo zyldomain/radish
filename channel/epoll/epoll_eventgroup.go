@@ -1,15 +1,18 @@
-package channel
+package epoll
 
-import "sync/atomic"
+import (
+	"radish/channel/iface"
+	"sync/atomic"
+)
 
 type EpollEventGroup struct {
 	index      int64
 	size       int
-	eventloops []*EpollEventLoop
+	eventloops []iface.EventLoop
 }
 
-func NewEpollEventGroup(size int) *EpollEventGroup {
-	loops := make([]*EpollEventLoop, size)
+func NewEpollEventGroup(size int) iface.EventGroup {
+	loops := make([]iface.EventLoop, size)
 
 	for i := 0; i < len(loops); i++ {
 		l, err := NewEpollEventLoop(int64(i))
@@ -30,6 +33,6 @@ func NewEpollEventGroup(size int) *EpollEventGroup {
 	}
 }
 
-func (eg *EpollEventGroup) Next() *EpollEventLoop {
+func (eg *EpollEventGroup) Next() iface.EventLoop {
 	return eg.eventloops[(atomic.AddInt64(&eg.index, 1) % int64(eg.size))]
 }

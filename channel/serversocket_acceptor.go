@@ -3,17 +3,18 @@ package channel
 import (
 	"golang.org/x/sys/unix"
 	"radish/channel/iface"
+	"radish/channel/pipeline"
 )
 
 type ServerSocketAcceptor struct {
-	*ChannelInboundHandlerAdapter
+	*pipeline.ChannelInboundHandlerAdapter
 
 	childHandler iface.ChannelHandler
 
-	childGroup *EpollEventGroup
+	childGroup iface.EventGroup
 }
 
-func NewServerSocketAccptor(childHandler iface.ChannelHandler, childGroup *EpollEventGroup) *ServerSocketAcceptor {
+func NewServerSocketAccptor(childHandler iface.ChannelHandler, childGroup iface.EventGroup) *ServerSocketAcceptor {
 	return &ServerSocketAcceptor{
 		childHandler: childHandler,
 		childGroup:   childGroup,

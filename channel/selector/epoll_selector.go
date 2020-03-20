@@ -1,4 +1,4 @@
-package channel
+package selector
 
 import (
 	"fmt"
@@ -56,7 +56,7 @@ func (es *EpollSelector) RemoveInterests(channel iface.Channel, filters int16) e
 func (es *EpollSelector) SelectWithTimeout(timeout *unix.Timespec) ([]iface.Key, error) {
 	n, err := unix.Kevent(es.epfd, nil, es.events, timeout)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("kevent", err)
 		return nil, err
 	}
 	keys := make([]iface.Key, n)
@@ -72,6 +72,7 @@ func (es *EpollSelector) SelectWithTimeout(timeout *unix.Timespec) ([]iface.Key,
 		keys[i] = iface.Key{
 			Channel: ch,
 			Filter:  kevent.Filter,
+			Flags:   kevent.Flags,
 		}
 	}
 

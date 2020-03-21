@@ -29,7 +29,7 @@ func OpenEpollSelector() (*EpollSelector, error) {
 		events:     make([]unix.Kevent_t, 64),
 	}
 
-	unix.Kevent(s.epfd, []unix.Kevent_t{{Ident: 0, Filter: unix.EVFILT_USER, Flags: unix.EV_ADD | unix.EV_CLEAR}}, nil, nil)
+	//unix.Kevent(s.epfd, []unix.Kevent_t{{Ident: 0, Filter: unix.EVFILT_USER, Flags: unix.EV_ADD}}, nil, nil)
 	return s, err
 }
 
@@ -74,6 +74,10 @@ func (es *EpollSelector) SelectWithTimeout(timeout *unix.Timespec) ([]iface.Key,
 			Filter:  kevent.Filter,
 			Flags:   kevent.Flags,
 		}
+	}
+
+	if n >= len(es.events) {
+		es.events = append(es.events, make([]unix.Kevent_t, len(es.events))...)
 	}
 
 	return keys, nil

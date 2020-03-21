@@ -2,10 +2,13 @@ package main
 
 import (
 	"fmt"
+	"net/http"
+	_ "net/http/pprof"
 	"radish/channel/epoll"
 	"radish/channel/iface"
 	"radish/channel/pipeline"
 	"radish/core"
+	"runtime"
 )
 
 type PrintHandler struct {
@@ -20,7 +23,7 @@ func (p *PrintHandler) ChannelRead(ctx iface.ChannelHandlerContextInvoker, msg i
 		return
 	}
 
-	fmt.Print(b, "客户端发送消息-> "+string(b), len(b), "\n")
+	fmt.Println("客户端发送消息-> " + string(b))
 	ctx.FireChannelRead(msg)
 }
 
@@ -36,22 +39,29 @@ func (p *ConvertHandler) ChannelRead(ctx iface.ChannelHandlerContextInvoker, msg
 		return
 	}
 
-	ctx.Write([]byte("服务端收到消息-> " + string(b) + "\n"))
+	ctx.Write([]byte("服务端收到消息-> " + string(b)))
 
 }
 
 func main() {
+	num := runtime.NumCPU()
 
-	cg := epoll.NewEpollEventGroup(4)
-	pg := epoll.NewEpollEventGroup(4)
+	//GOMAXPROCS 设置可同时执行的最大CPU数
+	runtime.GOMAXPROCS(num)
+	go func() {
+		http.ListenAndServe("localhost:8999", nil)
+	}()
+	cg := epoll.NewEpollEventGroup(num)
+	pg := epoll.NewEpollEventGroup(1)
 
 	b := core.NewBootstrap().
-		ParentGroup(pg).
-		ChildGroup(cg).
+		ServerSocketChannel(epoll.EpollServerSocket).
+		ParentGroup(cg).
+		ChildGroup(pg).
 		ChildHandler(pipeline.NewChannelInitializer(
 			func(pipeline iface.Pipeline) {
 				pipeline.AddLast(&PrintHandler{})
 				pipeline.AddLast(&ConvertHandler{})
 			}))
-	b.Bind("localhost:8080").Sync()
+	b.Bind("localhost:9001").Sync()
 }

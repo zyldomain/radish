@@ -7,23 +7,28 @@ import (
 	"radish/channel/util"
 )
 
+var count = 0
+
 type MessageUnsafe struct {
 	channel iface.Channel
+	list    *util.ArrayList
 }
 
 func NewMessageUnsafe(channel iface.Channel) *MessageUnsafe {
-	return &MessageUnsafe{channel: channel}
+	return &MessageUnsafe{channel: channel, list: util.NewArrayList()}
 }
 
 func (u *MessageUnsafe) Read(links *util.ArrayList) {
 	for {
 		nfd, sa, err := unix.Accept(u.channel.FD())
+		u.list.Add(nfd)
 		if err != nil {
 			if err == unix.EAGAIN {
 				return
 			} else {
 				panic(err)
 			}
+
 		}
 		c := NewEpollChannel(nfd, sa)
 

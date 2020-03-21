@@ -39,5 +39,5 @@ func (ssa *ServerSocketAcceptor) initChannel(sc iface.Channel) {
 		sc.Pipeline().AddLast(ssa.childHandler)
 	}
 
-	ssa.childGroup.Next().Register(sc, []int16{unix.EVFILT_READ})
+	ssa.childGroup.Next().Register(sc, []int16{unix.EVFILT_READ | unix.EVFILT_WRITE})
 }

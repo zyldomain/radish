@@ -11,12 +11,13 @@ type TaskList struct {
 
 func NewTaskList() *TaskList {
 	return &TaskList{
-		elems: make([]*Task, 16),
+		elems: make([]*Task, 4),
 		size:  0,
 	}
 }
 
 func (a *TaskList) Add(task *Task) {
+
 	a.elems[a.size] = task
 	a.size++
 	if a.size >= len(a.elems)/2 {
@@ -27,6 +28,7 @@ func (a *TaskList) Add(task *Task) {
 }
 
 func (a *TaskList) Remove(index int) {
+
 	if index >= a.size {
 		panic(errors.New("越界"))
 	}
@@ -36,6 +38,10 @@ func (a *TaskList) Remove(index int) {
 	}
 
 	a.size--
+}
+
+func (a *TaskList) RemoveAll() {
+	a.size = 0
 }
 
 func (a *TaskList) Get(index int) *Task {
@@ -48,4 +54,8 @@ func (a *TaskList) Get(index int) *Task {
 
 func (a *TaskList) Iterator() []*Task {
 	return a.elems[:a.size]
+}
+
+func (a *TaskList) Size() int {
+	return a.size
 }

@@ -9,7 +9,7 @@ type ArrayList struct {
 
 func NewArrayList() *ArrayList {
 	return &ArrayList{
-		elems: make([]interface{}, 16),
+		elems: make([]interface{}, 4),
 		size:  0,
 	}
 }
@@ -49,4 +49,8 @@ func (a *ArrayList) Iterator() []interface{} {
 }
 func (a *ArrayList) Size() int {
 	return a.size
+}
+
+func (a *ArrayList) RemoveAll() {
+	a.size = 0
 }

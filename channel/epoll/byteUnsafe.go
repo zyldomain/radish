@@ -1,12 +1,18 @@
 package epoll
 
 import (
-	"fmt"
 	"golang.org/x/sys/unix"
 	"net"
 	"radish/channel/iface"
 	"radish/channel/util"
+	"sync"
 )
+
+var pool = sync.Pool{
+	New: func() interface{} {
+		return make([]byte, 32)
+	},
+}
 
 type ByteUnsafe struct {
 	channel iface.Channel
@@ -17,20 +23,23 @@ func NewByteUnsafe(channel iface.Channel) *ByteUnsafe {
 }
 
 func (b *ByteUnsafe) Read(links *util.ArrayList) {
+
+	buf := pool.Get().([]byte)
 	for {
-		buf := make([]byte, 1024)
 		n, err := unix.Read(b.channel.FD(), buf)
 		if err != nil || n == 0 {
 			if err == unix.EAGAIN {
-				fmt.Println("unix.EAGAIN", links.Size())
 				return
 			}
-			fmt.Println("error : " + err.Error())
-			unix.Close(b.channel.FD())
+			//fmt.Println("error : " + err.Error())
+			return
 		}
-		links.Add(buf[:n])
+		tmp := make([]byte, n)
+		copy(tmp, buf)
+		links.Add(tmp)
 	}
 
+	pool.Put(buf)
 }
 
 func (b *ByteUnsafe) Write(buf []byte) (int, error) {

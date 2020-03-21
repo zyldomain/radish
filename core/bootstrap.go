@@ -4,7 +4,6 @@ import (
 	"errors"
 	"golang.org/x/sys/unix"
 	"radish/channel"
-	"radish/channel/epoll"
 	"radish/channel/iface"
 	"sync"
 )
@@ -19,6 +18,8 @@ type Bootstrap struct {
 	parentHandler iface.ChannelHandler
 
 	wg sync.WaitGroup
+
+	serverSocketChannel string
 }
 
 func NewBootstrap() *Bootstrap {
@@ -47,27 +48,35 @@ func (b *Bootstrap) ParentHandler(handler iface.ChannelHandler) *Bootstrap {
 	return b
 }
 
+func (b *Bootstrap) ServerSocketChannel(name string) *Bootstrap {
+	b.serverSocketChannel = name
+	return b
+}
+
 func (b *Bootstrap) Bind(address string) *Bootstrap {
 
 	if b.childGroup == nil || b.parentGroup == nil {
 		panic(errors.New("no executor "))
 	}
-	ssc := epoll.NewEpollServerSocketChannel(address)
+	b.initAndRegisterChannel(address)
 
+	b.wg.Add(1)
+	return b
+}
+
+func (b *Bootstrap) initAndRegisterChannel(address string) {
+	f, err := channel.GetChannel(b.serverSocketChannel)
+	if err != nil {
+		panic(err)
+	}
+
+	ssc := f(address)
 	if b.parentHandler != nil {
 		ssc.Pipeline().AddLast(b.parentHandler)
 	}
 	ssc.Pipeline().AddLast(channel.NewServerSocketAccptor(b.childHandler, b.childGroup))
 
 	b.parentGroup.Next().Register(ssc, []int16{unix.EVFILT_READ})
-
-	/*doBind := func() {
-		ssc.Bind(address)
-	}
-	ssc.EventLoop().AddTask(util.NewTask(doBind))*/
-
-	b.wg.Add(1)
-	return b
 }
 
 func (b *Bootstrap) Sync() {

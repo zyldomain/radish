@@ -1,8 +1,6 @@
 package epoll
 
 import (
-	"golang.org/x/sys/unix"
-	"net"
 	"radish/channel/iface"
 	"radish/channel/util"
 )
@@ -21,18 +19,12 @@ func (u *MessageUnsafe) Read(links *util.ArrayList) {
 
 }
 
-func (u *MessageUnsafe) Write(buf []byte) (int, error) {
-	return 0, nil
+func (u *MessageUnsafe) Write(msg interface{}) (int, error) {
+	c, _ := u.channel.(AbstractChannel)
+	return c.write(msg)
 }
 
 func (u *MessageUnsafe) Bind(address string) {
-	l, err := net.ResolveTCPAddr("tcp", address)
-
-	if err != nil {
-		panic(err)
-	}
-	sa := &unix.SockaddrInet4{Port: l.Port}
-	copy(sa.Addr[:], l.IP)
-
-	unix.Bind(u.channel.FD(), sa)
+	c, _ := u.channel.(AbstractChannel)
+	c.bind(address)
 }

@@ -17,7 +17,9 @@ type Bootstrap struct {
 }
 
 func NewBootstrap() *Bootstrap {
-	return &Bootstrap{}
+	b := &Bootstrap{network: "tcp"}
+
+	return b
 }
 
 func (b *Bootstrap) Group(group iface.EventGroup) *Bootstrap {

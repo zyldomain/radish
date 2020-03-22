@@ -3,7 +3,6 @@ package epoll
 import (
 	"golang.org/x/sys/unix"
 	"net"
-	"os"
 	"radish/channel"
 	"radish/channel/iface"
 	"radish/channel/pipeline"
@@ -12,9 +11,6 @@ import (
 
 type NIOServerSocketChannel struct {
 	*NIOSocketChannel
-	address string
-	ln      net.Listener
-	f       *os.File
 }
 
 const NIOServerSocket = "NIOServerSocket"
@@ -31,14 +27,15 @@ func NewNIOServerSocketChannel(network string, address string, fd int) iface.Cha
 	f, _ := l.File()
 
 	epchannel := &NIOSocketChannel{
-		fd: int(f.Fd()),
+		fd:      int(f.Fd()),
+		network: network,
+		address: address,
+		f:       f,
+		ln:      ln,
 	}
 
 	ssChannel := &NIOServerSocketChannel{
 		NIOSocketChannel: epchannel,
-		address:          address,
-		ln:               ln,
-		f:                f,
 	}
 	ssChannel.unsafe = NewMessageUnsafe(ssChannel)
 	ssChannel.pipeline = pipeline.NewDefaultChannelPipeline(ssChannel)
@@ -57,8 +54,24 @@ func (ssc *NIOServerSocketChannel) doReadMessages(links *util.ArrayList) {
 			}
 
 		}
-		c := NewNIOSocketChannel("tcp", addr.String(), nfd)
+		c := NewNIOSocketChannel(ssc.network, addr.String(), nfd)
 
 		links.Add(c)
 	}
+}
+
+func (ssc *NIOServerSocketChannel) write(msg interface{}) (int, error) {
+	return 0, nil
+}
+
+func (ssc *NIOServerSocketChannel) bind(address string) {
+	l, err := net.ResolveTCPAddr(ssc.network, address)
+
+	if err != nil {
+		panic(err)
+	}
+	sa := &unix.SockaddrInet4{Port: l.Port}
+	copy(sa.Addr[:], l.IP)
+
+	unix.Bind(ssc.FD(), sa)
 }

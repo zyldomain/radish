@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	go server()
+	//go server()
 
 	client()
 
@@ -34,7 +34,7 @@ func server() {
 }
 
 func client() {
-	addr, _ := net.ResolveUDPAddr("udp", "localhost:9000")
+	addr, _ := net.ResolveUDPAddr("udp", "localhost:8080")
 	conn, _ := net.DialUDP("udp", nil, addr)
 	conn.Write([]byte("hello"))
 	buf := make([]byte, 1024)

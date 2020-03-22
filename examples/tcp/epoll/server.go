@@ -46,8 +46,6 @@ func (p *ConvertHandler) ChannelRead(ctx iface.ChannelHandlerContextInvoker, msg
 
 func main() {
 	num := runtime.NumCPU()
-
-	//GOMAXPROCS 设置可同时执行的最大CPU数
 	runtime.GOMAXPROCS(num)
 	go func() {
 		http.ListenAndServe("localhost:8999", nil)

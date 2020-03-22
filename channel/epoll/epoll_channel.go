@@ -22,6 +22,7 @@ type NIOSocketChannel struct {
 	network   string
 	f         *os.File
 	conn      net.Conn
+	ln        net.Listener
 }
 
 const NIOSocket = "NIOSocket"
@@ -127,4 +128,26 @@ func (ec *NIOSocketChannel) doReadMessages(links *util.ArrayList) {
 	}
 
 	pool.Put(buf)
+}
+
+func (ec *NIOSocketChannel) write(msg interface{}) (int, error) {
+
+	buf, ok := msg.([]byte)
+
+	if !ok {
+		panic(errors.New("wrong type"))
+	}
+	return unix.Write(ec.FD(), buf)
+}
+
+func (ec *NIOSocketChannel) bind(address string) {
+	l, err := net.ResolveTCPAddr("tcp", address)
+
+	if err != nil {
+		panic(err)
+	}
+	sa := &unix.SockaddrInet4{Port: l.Port}
+	copy(sa.Addr[:], l.IP)
+
+	unix.Bind(ec.FD(), sa)
 }

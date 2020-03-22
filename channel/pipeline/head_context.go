@@ -1,7 +1,6 @@
 package pipeline
 
 import (
-	"errors"
 	"radish/channel/iface"
 )
 
@@ -25,12 +24,7 @@ func (h *HeadHandler) ChannelHandlerRemoved(ctx iface.ChannelHandlerContextInvok
 
 func (h *HeadHandler) Write(ctx iface.ChannelHandlerContextInvoker, msg interface{}) {
 
-	buf, ok := msg.([]byte)
-
-	if !ok {
-		panic(errors.New("write failed"))
-	}
-	h.unsafe.Write(buf)
+	h.unsafe.Write(msg)
 }
 
 func (h *HeadHandler) Bind(ctx iface.ChannelHandlerContextInvoker, address string) {

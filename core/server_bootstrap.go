@@ -26,7 +26,9 @@ type ServerBootstrap struct {
 }
 
 func NewServerBootstrap() *ServerBootstrap {
-	return &ServerBootstrap{}
+	sb := &ServerBootstrap{}
+	sb.network = "tcp"
+	return sb
 }
 
 func (b *ServerBootstrap) ChildGroup(cg iface.EventGroup) *ServerBootstrap {

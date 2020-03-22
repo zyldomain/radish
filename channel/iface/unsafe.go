@@ -4,6 +4,6 @@ import "radish/channel/util"
 
 type Unsafe interface {
 	Read(links *util.ArrayList)
-	Write([]byte) (int, error)
+	Write(msg interface{}) (int, error)
 	Bind(address string)
 }

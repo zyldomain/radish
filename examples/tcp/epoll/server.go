@@ -6,6 +6,7 @@ import (
 	_ "net/http/pprof"
 	"radish/channel/epoll"
 	"radish/channel/iface"
+	"radish/channel/loop"
 	"radish/channel/pipeline"
 	"radish/core"
 	"runtime"
@@ -39,7 +40,7 @@ func (p *ConvertHandler) ChannelRead(ctx iface.ChannelHandlerContextInvoker, msg
 		return
 	}
 
-	ctx.Write([]byte("服务端收到消息-> " + string(b)))
+	ctx.Write([]byte(string(b)))
 
 }
 
@@ -51,11 +52,12 @@ func main() {
 	go func() {
 		http.ListenAndServe("localhost:8999", nil)
 	}()
-	cg := epoll.NewEpollEventGroup(num)
-	pg := epoll.NewEpollEventGroup(1)
+	cg := loop.NewEpollEventGroup(num)
+	pg := loop.NewEpollEventGroup(1)
 
-	b := core.NewBootstrap().
-		ServerSocketChannel(epoll.EpollServerSocket).
+	b := core.NewServerBootstrap().
+		ServerSocketChannel(epoll.NIOServerSocket).
+		NetWrok("tcp").
 		ParentGroup(cg).
 		ChildGroup(pg).
 		ChildHandler(pipeline.NewChannelInitializer(
@@ -64,4 +66,5 @@ func main() {
 				pipeline.AddLast(&ConvertHandler{})
 			}))
 	b.Bind("localhost:9001").Sync()
+
 }

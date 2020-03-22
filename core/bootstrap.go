@@ -1,7 +1,6 @@
 package core
 
 import (
-	"errors"
 	"golang.org/x/sys/unix"
 	"radish/channel"
 	"radish/channel/iface"
@@ -9,55 +8,49 @@ import (
 )
 
 type Bootstrap struct {
-	childGroup iface.EventGroup
-
-	parentGroup iface.EventGroup
-
-	childHandler iface.ChannelHandler
-
-	parentHandler iface.ChannelHandler
-
-	wg sync.WaitGroup
-
-	serverSocketChannel string
+	group         iface.EventGroup
+	network       string
+	handler       iface.ChannelHandler
+	wg            sync.WaitGroup
+	socketChannel string
+	channel       iface.Channel
 }
 
 func NewBootstrap() *Bootstrap {
 	return &Bootstrap{}
 }
 
-func (b *Bootstrap) ChildGroup(cg iface.EventGroup) *Bootstrap {
-	b.childGroup = cg
+func (b *Bootstrap) Group(group iface.EventGroup) *Bootstrap {
+	b.group = group
+	return b
+}
+
+func (b *Bootstrap) Network(network string) *Bootstrap {
+	b.network = network
 
 	return b
 }
 
-func (b *Bootstrap) ParentGroup(pg iface.EventGroup) *Bootstrap {
-	b.parentGroup = pg
-	return b
-}
-
-func (b *Bootstrap) ChildHandler(handler iface.ChannelHandler) *Bootstrap {
-	b.childHandler = handler
-	return b
-}
-
-func (b *Bootstrap) ParentHandler(handler iface.ChannelHandler) *Bootstrap {
-	b.parentHandler = handler
+func (b *Bootstrap) Handler(handler iface.ChannelHandler) *Bootstrap {
+	b.handler = handler
 
 	return b
 }
 
-func (b *Bootstrap) ServerSocketChannel(name string) *Bootstrap {
-	b.serverSocketChannel = name
+func (b *Bootstrap) SocketChannel(name string) *Bootstrap {
+	b.socketChannel = name
 	return b
+}
+
+func (b *Bootstrap) Sync() {
+	b.wg.Wait()
 }
 
 func (b *Bootstrap) Bind(address string) *Bootstrap {
-
-	if b.childGroup == nil || b.parentGroup == nil {
-		panic(errors.New("no executor "))
+	if b.group == nil {
+		panic("no executor")
 	}
+
 	b.initAndRegisterChannel(address)
 
 	b.wg.Add(1)
@@ -65,24 +58,21 @@ func (b *Bootstrap) Bind(address string) *Bootstrap {
 }
 
 func (b *Bootstrap) initAndRegisterChannel(address string) {
-	f, err := channel.GetChannel(b.serverSocketChannel)
+	f, err := channel.GetChannel(b.socketChannel)
+
 	if err != nil {
 		panic(err)
 	}
 
-	ssc := f(address)
-	if b.parentHandler != nil {
-		ssc.Pipeline().AddLast(b.parentHandler)
+	c := f(b.network, address, -1)
+
+	if b.handler != nil {
+		c.Pipeline().AddLast(b.handler)
 	}
-	ssc.Pipeline().AddLast(channel.NewServerSocketAccptor(b.childHandler, b.childGroup))
-
-	b.parentGroup.Next().Register(ssc, []int16{unix.EVFILT_READ})
+	b.channel = c
+	b.group.Next().Register(c, []int16{unix.EVFILT_READ | unix.EVFILT_WRITE})
 }
 
-func (b *Bootstrap) Sync() {
-	b.wg.Wait()
-}
-
-func (b *Bootstrap) Shutdown() {
-	b.wg.Done()
+func (b *Bootstrap) Channel() iface.Channel {
+	return b.channel
 }

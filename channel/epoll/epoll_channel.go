@@ -1,70 +1,130 @@
 package epoll
 
 import (
+	"errors"
 	"golang.org/x/sys/unix"
+	"net"
+	"os"
+	"radish/channel"
 	"radish/channel/iface"
+	"radish/channel/util"
+
 	"radish/channel/pipeline"
 )
 
-type EpollChannel struct {
+type NIOSocketChannel struct {
 	fd        int
 	pipeline  iface.Pipeline
-	sa        unix.Sockaddr
+	address   string
 	unsafe    iface.Unsafe
 	active    bool
 	eventloop iface.EventLoop
+	network   string
+	f         *os.File
+	conn      net.Conn
 }
 
-func NewEpollChannel(fd int, sa unix.Sockaddr) *EpollChannel {
-	epchannel := &EpollChannel{
-		fd: fd,
-		sa: sa,
+const NIOSocket = "NIOSocket"
+
+func init() {
+	channel.SetChannel("NIOSocket", NewNIOSocketChannel)
+}
+
+func NewNIOSocketChannel(network string, address string, fd int) iface.Channel {
+
+	epchannel := &NIOSocketChannel{
+		fd:      fd,
+		network: network,
+		address: address,
 	}
+
 	epchannel.unsafe = NewByteUnsafe(epchannel)
 	epchannel.pipeline = pipeline.NewDefaultChannelPipeline(epchannel)
 
+	if fd == -1 {
+
+		conn, err := net.Dial(network, address)
+		if err != nil {
+			panic(err)
+		}
+
+		tc, ok := conn.(*net.TCPConn)
+
+		if !ok {
+			panic(errors.New("network error"))
+		}
+
+		f, err := tc.File()
+
+		if err != nil {
+			panic(err)
+		}
+
+		epchannel.f = f
+		epchannel.fd = int(f.Fd())
+
+		epchannel.conn = conn
+	}
 	return epchannel
 }
 
-func (ec *EpollChannel) FD() int {
+func (ec *NIOSocketChannel) FD() int {
 	return ec.fd
 }
 
-func (ec *EpollChannel) Read(msg interface{}) {
+func (ec *NIOSocketChannel) Read(msg interface{}) {
 	ec.pipeline.ChannelRead(msg)
 }
 
-func (ec *EpollChannel) Write(msg interface{}) {
+func (ec *NIOSocketChannel) Write(msg interface{}) {
 	ec.pipeline.Write(msg)
 }
 
-func (ec *EpollChannel) ChannelActive(msg interface{}) {
+func (ec *NIOSocketChannel) ChannelActive(msg interface{}) {
 	ec.pipeline.ChannelActive(msg)
 }
-func (ec *EpollChannel) ChannelInActive(msg interface{}) {
+func (ec *NIOSocketChannel) ChannelInActive(msg interface{}) {
 	ec.pipeline.ChannelInActive(msg)
 }
 
-func (ec *EpollChannel) Unsafe() iface.Unsafe {
+func (ec *NIOSocketChannel) Unsafe() iface.Unsafe {
 	return ec.unsafe
 }
 
-func (ec *EpollChannel) IsActive() bool {
+func (ec *NIOSocketChannel) IsActive() bool {
 	return ec.active
 }
 
-func (ec *EpollChannel) Bind(address string) {
+func (ec *NIOSocketChannel) Bind(address string) {
 	ec.pipeline.Bind(address)
 }
 
-func (ec *EpollChannel) Pipeline() iface.Pipeline {
+func (ec *NIOSocketChannel) Pipeline() iface.Pipeline {
 	return ec.pipeline
 }
 
-func (ec *EpollChannel) SetEventLoop(eventLoop iface.EventLoop) {
+func (ec *NIOSocketChannel) SetEventLoop(eventLoop iface.EventLoop) {
 	ec.eventloop = eventLoop
 }
 
-func (ec *EpollChannel) EventLoop() iface.EventLoop {
+func (ec *NIOSocketChannel) EventLoop() iface.EventLoop {
 	return ec.eventloop
+}
+func (ec *NIOSocketChannel) doReadMessages(links *util.ArrayList) {
+	buf := pool.Get().([]byte)
+	for {
+		n, err := unix.Read(ec.fd, buf)
+		if err != nil || n == 0 {
+			if err == unix.EAGAIN {
+				return
+			}
+			//fmt.Println("error : " + err.Error())
+			return
+		}
+		tmp := make([]byte, n)
+		copy(tmp, buf)
+		links.Add(tmp)
+	}
+
+	pool.Put(buf)
 }

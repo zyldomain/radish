@@ -23,23 +23,8 @@ func NewByteUnsafe(channel iface.Channel) *ByteUnsafe {
 }
 
 func (b *ByteUnsafe) Read(links *util.ArrayList) {
-
-	buf := pool.Get().([]byte)
-	for {
-		n, err := unix.Read(b.channel.FD(), buf)
-		if err != nil || n == 0 {
-			if err == unix.EAGAIN {
-				return
-			}
-			//fmt.Println("error : " + err.Error())
-			return
-		}
-		tmp := make([]byte, n)
-		copy(tmp, buf)
-		links.Add(tmp)
-	}
-
-	pool.Put(buf)
+	c, _ := b.channel.(AbstractChannel)
+	c.doReadMessages(links)
 }
 
 func (b *ByteUnsafe) Write(buf []byte) (int, error) {

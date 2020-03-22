@@ -1,4 +1,4 @@
-package epoll
+package loop
 
 import (
 	"radish/channel/iface"

@@ -5,13 +5,13 @@ import (
 	"radish/channel/iface"
 )
 
-var serverSocketChannelMap = make(map[string]func(address string) iface.Channel)
+var serverSocketChannelMap = make(map[string]func(network string, address string, fd int) iface.Channel)
 
-func SetChannel(name string, f func(address string) iface.Channel) {
+func SetChannel(name string, f func(network string, address string, fd int) iface.Channel) {
 	serverSocketChannelMap[name] = f
 }
 
-func GetChannel(name string) (func(address string) iface.Channel, error) {
+func GetChannel(name string) (func(network string, address string, fd int) iface.Channel, error) {
 	if f, ok := serverSocketChannelMap[name]; ok {
 		return f, nil
 	}

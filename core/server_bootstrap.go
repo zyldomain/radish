@@ -74,7 +74,7 @@ func (b *ServerBootstrap) initAndRegisterChannel(address string) {
 		panic(err)
 	}
 
-	ssc := f(b.network, address, -1)
+	ssc := f(nil,b.network, address, 0)
 	if b.parentHandler != nil {
 		ssc.Pipeline().AddLast(b.parentHandler)
 	}

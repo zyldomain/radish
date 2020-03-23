@@ -20,7 +20,7 @@ func (ssc *NIOServerSocketChannel) doReadMessages(links *util.ArrayList) {
 			}
 
 		}
-		c := NewNIOSocketChannel(ssc.network, addr.String(), nfd)
+		c := NewNIOSocketChannel(nil,ssc.network, addr.String(), nfd)
 
 		links.Add(c)
 	}

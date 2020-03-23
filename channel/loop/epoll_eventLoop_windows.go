@@ -1,9 +1,9 @@
-//+build  linux darwin netbsd freebsd openbsd dragonfly
+// +build windows
 
 package loop
 
 import (
-	"fmt"
+	"errors"
 	"radish/channel/iface"
 	"radish/channel/selector"
 	"radish/channel/util"
@@ -19,7 +19,10 @@ type EpollEventLoop struct {
 	stop     bool
 	running  bool
 
-	lock sync.RWMutex
+	lock *sync.RWMutex
+	tlock sync.Mutex
+
+	channelPkg map[iface.Channel]chan *iface.Pkg
 }
 
 func NewEpollEventLoop(id int64) (*EpollEventLoop, error) {
@@ -35,6 +38,8 @@ func NewEpollEventLoop(id int64) (*EpollEventLoop, error) {
 		stop:     true,
 		running:  false,
 		id:       id,
+		channelPkg:make(map[iface.Channel]chan *iface.Pkg),
+		lock:&sync.RWMutex{},
 	}, err
 }
 
@@ -50,27 +55,48 @@ func (e *EpollEventLoop) StartWork() {
 
 		e.selector = s
 	}
-
 	go func() {
 		for e.running {
+
 			e.runAllTasks()
-			keys, err := e.selector.SelectWithTimeout(util.MillionSecond / 10)
-			if err != nil {
-				//e.reBuildSelector()
-				fmt.Println("1异常断开", e.id)
-				fmt.Println(err)
-				fmt.Println("2异常断开")
+			e.lock.RLock()
+			for c, ch := range e.channelPkg{
+				stop := false
+				for !stop{
+					select {
+					case p := <-ch:
+						if p.Event == iface.READ ||  p.Event == iface.CONNECTED {
+							c.Read(p.Data)
+						}else if p.Event == iface.CLOSED {
+							subc, ok := p.Data.(iface.Channel)
+							if !ok {
+								panic("wrong type")
+							}
+							e.RemoveChannel(subc)
+						}else if p.Event == iface.WRITE {
+							crw, ok := c.(iface.ChannelRW)
+							if !ok {
+								panic("wrong type")
+							}
+							crw.AddWriteMsg(p)
+						}
+					default:
+						stop = true
+						break
+					}
+				}
 			}
-			e.processKeys(keys)
+			e.lock.RUnlock()
+
 		}
 	}()
 }
 
 func (e *EpollEventLoop) runAllTasks() {
-	e.lock.Lock()
+	e.tlock.Lock()
 	e.ttasks, e.tasks = e.tasks, e.ttasks
 	e.tasks.RemoveAll()
-	e.lock.Unlock()
+	e.tlock.Unlock()
 	for _, task := range e.ttasks.Iterator() {
 		task.Run()
 	}
@@ -78,18 +104,30 @@ func (e *EpollEventLoop) runAllTasks() {
 }
 
 func (e *EpollEventLoop) AddTask(task *util.Task) {
-	e.lock.Lock()
+	e.tlock.Lock()
 
-	defer e.lock.Unlock()
+	defer e.tlock.Unlock()
 	e.tasks.Add(task)
 }
 
 func (e *EpollEventLoop) Register(channel iface.Channel) {
 
 	channel.SetEventLoop(e)
+	e.lock.Lock()
+
+	e.channelPkg[channel] = make(chan *iface.Pkg,1000)
+
+
+	c, ok := channel.(iface.ChannelRW)
+
+	if !ok {
+		panic(errors.New("wrong type"))
+	}
+	e.lock.Unlock()
+	go c.WriteLoop()
+	go c.ReadLoop()
+
 	doRegister := func() {
-		channel.SetNonBolcking()
-		e.selector.AddRead(channel)
 	}
 
 	if e.InEventLoop() {
@@ -118,7 +156,22 @@ func (e *EpollEventLoop) Shutdown() {
 	//TODO释放selector
 	e.selector = nil
 }
-func (e *EpollEventLoop) AddPackage(ch Channel,pkg *epoll.Pkg){}
 
-func (e *EpollEventLoop)RemoveChannel(ch Channel){}
+func (e *EpollEventLoop) AddPackage(c iface.Channel, pkg *iface.Pkg){
+	e.lock.RLock()
+	ch, ok := e.channelPkg[c]
 
+	if !ok{
+		panic("unkown error")
+	}
+	e.lock.RUnlock()
+
+
+	ch <- pkg
+}
+func (e *EpollEventLoop)RemoveChannel(ch iface.Channel){
+	e.lock.Lock()
+	delete(e.channelPkg,ch)
+
+	e.lock.Unlock()
+}

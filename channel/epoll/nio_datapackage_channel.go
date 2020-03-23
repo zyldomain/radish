@@ -9,14 +9,14 @@ import (
 	"radish/channel/pipeline"
 )
 
-const NIODataPackage = "NIOSocket"
+const NIODataPackage = "NIODataPackage"
 
 func init() {
-	channel.SetChannel("NIOSocket", NewNIODataPackageChannel)
+	channel.SetChannel("NIODataPackage", NewNIODataPackageChannel)
 }
 
 type NIODataPackageChannel struct {
-	fd        int
+	*FDE
 	pipeline  iface.Pipeline
 	address   string
 	unsafe    iface.Unsafe
@@ -25,24 +25,35 @@ type NIODataPackageChannel struct {
 	network   string
 	f         *os.File
 	conn      net.PacketConn
+	msg chan *iface.Pkg
 }
 
-func NewNIODataPackageChannel(network string, address string, fd int) iface.Channel {
+func NewNIODataPackageChannel(conn interface{},network string, address string, fd interface{}) iface.Channel {
+	var pc net.PacketConn
+	var ok bool
+	if conn != nil{
+		pc, ok = conn.(net.PacketConn)
 
+		if !ok {
+			panic(errors.New("wrong type"))
+		}
+	}
 	np := &NIODataPackageChannel{
-		fd:      fd,
+		FDE:&FDE{fd:GetFD(fd)},
 		address: address,
 		network: network,
+		msg:make(chan *iface.Pkg,1000),
+		conn:pc,
 	}
 
-	if fd == -1 {
+	if GetFD(fd) == 0 {
 		pconn, err := net.ListenPacket(np.network, np.address)
 
 		if err != nil {
 			panic(err)
 		}
 
-		uconn, ok := pconn.(*net.UDPConn)
+		/*uconn, ok := pconn.(*net.UDPConn)
 
 		if !ok {
 			panic(errors.New("unknown error"))
@@ -53,12 +64,14 @@ func NewNIODataPackageChannel(network string, address string, fd int) iface.Chan
 		if err != nil {
 			panic(err)
 		}
+		np.f = f
+		*/
 
 		np.conn = pconn
 
-		np.f = f
 
-		np.fd = int(f.Fd())
+
+		np.fd = GetFD(1)
 
 	}
 	np.unsafe = NewByteUnsafe(np)
@@ -67,9 +80,6 @@ func NewNIODataPackageChannel(network string, address string, fd int) iface.Chan
 	return np
 }
 
-func (ec *NIODataPackageChannel) FD() int {
-	return ec.fd
-}
 
 func (ec *NIODataPackageChannel) Read(msg interface{}) {
 	ec.pipeline.ChannelRead(msg)

@@ -65,7 +65,7 @@ func (b *Bootstrap) initAndRegisterChannel(address string) {
 		panic(err)
 	}
 
-	c := f(b.network, address, -1)
+	c := f(nil,b.network, address, 0)
 
 	if b.handler != nil {
 		c.Pipeline().AddLast(b.handler)

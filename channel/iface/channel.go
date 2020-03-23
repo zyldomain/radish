@@ -1,7 +1,7 @@
 package iface
 
 type Channel interface {
-	FD() int
+	FD
 	Read(msg interface{})
 
 	Write(msg interface{})
@@ -17,4 +17,5 @@ type Channel interface {
 	SetEventLoop(eventLoop EventLoop)
 
 	SetNonBolcking()
+
 }

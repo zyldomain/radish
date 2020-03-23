@@ -23,7 +23,6 @@ func (h *HeadHandler) ChannelHandlerRemoved(ctx iface.ChannelHandlerContextInvok
 }
 
 func (h *HeadHandler) Write(ctx iface.ChannelHandlerContextInvoker, msg interface{}) {
-
 	h.unsafe.Write(msg)
 }
 

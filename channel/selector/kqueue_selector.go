@@ -31,8 +31,6 @@ func OpenSelector() (iface.Selector, error) {
 		size:       0,
 		events:     make([]unix.Kevent_t, 64),
 	}
-
-	//unix.Kevent(s.epfd, []unix.Kevent_t{{Ident: 0, Filter: unix.EVFILT_USER, Flags: unix.EV_ADD}}, nil, nil)
 	return s, err
 }
 

@@ -15,11 +15,8 @@ const (
 
 func (e *EpollEventLoop) processKeys(keys []iface.Key) {
 	for _, key := range keys {
-		if key.Flags&unix.EV_ERROR != 0 || key.Flags&unix.EV_EOF != 0 {
-			unix.Close(key.Channel.FD())
-			continue
-		}
-		if key.Filter == unix.EVFILT_READ {
+
+		if key.Events & InEvents!=0 {
 
 			key.Channel.Unsafe().Read(e.objList)
 			for _, o := range e.objList.Iterator() {
@@ -27,13 +24,9 @@ func (e *EpollEventLoop) processKeys(keys []iface.Key) {
 			}
 
 			e.objList.RemoveAll()
-			if key.Channel.FD() == 9 {
-				//e.selector.RemoveInterests(key.Channel, key.Filter)
-
-			}
 		}
 
-		if key.Filter == unix.EVFILT_WRITE {
+		if key.Events & OutEvents != 0 {
 			//TODO
 		}
 

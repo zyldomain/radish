@@ -17,7 +17,9 @@ func (ec *NIOSocketChannel) doReadMessages(links *util.ArrayList) {
 			if err == unix.EAGAIN {
 				return
 			}
-			//fmt.Println("error : " + err.Error())
+			return
+
+			unix.Close(ec.fd)
 			return
 		}
 		tmp := make([]byte, n)

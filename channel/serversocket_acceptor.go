@@ -21,7 +21,6 @@ func NewServerSocketAccptor(childHandler iface.ChannelHandler, childGroup iface.
 }
 
 func (ssa *ServerSocketAcceptor) ChannelRead(ctx iface.ChannelHandlerContextInvoker, msg interface{}) {
-
 	sc, ok := msg.(iface.Channel)
 
 	if !ok {

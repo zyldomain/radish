@@ -10,7 +10,7 @@ import (
 )
 
 type NIOSocketChannel struct {
-	fd        int
+	*FDE
 	pipeline  iface.Pipeline
 	address   string
 	unsafe    iface.Unsafe
@@ -20,6 +20,7 @@ type NIOSocketChannel struct {
 	f         *os.File
 	conn      net.Conn
 	ln        net.Listener
+	msg       chan *iface.Pkg
 }
 
 const NIOSocket = "NIOSocket"
@@ -28,38 +29,48 @@ func init() {
 	channel.SetChannel("NIOSocket", NewNIOSocketChannel)
 }
 
-func NewNIOSocketChannel(network string, address string, fd int) iface.Channel {
+func NewNIOSocketChannel(conn interface{},network string, address string, fd interface{}) iface.Channel {
+	var c net.Conn
+	var ok bool
+	if conn != nil{
+		c, ok = conn.(net.Conn)
 
+		if !ok {
+			panic(errors.New("wrong type"))
+		}
+	}
 	epchannel := &NIOSocketChannel{
-		fd:      fd,
+		FDE:&FDE{fd:GetFD(fd)},
 		network: network,
 		address: address,
+		msg :make(chan *iface.Pkg, 1000),
+		conn:c,
 	}
 
 	epchannel.unsafe = NewByteUnsafe(epchannel)
 	epchannel.pipeline = pipeline.NewDefaultChannelPipeline(epchannel)
 
-	if fd == -1 {
+	if GetFD(fd) == 0 {
 
 		conn, err := net.Dial(network, address)
 		if err != nil {
 			panic(err)
 		}
 
-		tc, ok := conn.(*net.TCPConn)
+		/*tc, ok := conn.(*net.TCPConn)
 
 		if !ok {
 			panic(errors.New("network error"))
-		}
+		}*/
 
-		f, err := tc.File()
+		/*f, err := tc.File()
 
 		if err != nil {
 			panic(err)
 		}
 
-		epchannel.f = f
-		epchannel.fd = int(f.Fd())
+		epchannel.f = f*/
+		epchannel.fd = GetFD(1)
 
 		epchannel.conn = conn
 	}
@@ -67,9 +78,6 @@ func NewNIOSocketChannel(network string, address string, fd int) iface.Channel {
 	return epchannel
 }
 
-func (ec *NIOSocketChannel) FD() int {
-	return ec.fd
-}
 
 func (ec *NIOSocketChannel) Read(msg interface{}) {
 	ec.pipeline.ChannelRead(msg)

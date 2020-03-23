@@ -18,7 +18,6 @@ type PrintHandler struct {
 
 func (p *PrintHandler) ChannelRead(ctx iface.ChannelHandlerContextInvoker, msg interface{}) {
 	b, ok := msg.([]byte)
-
 	if !ok {
 		ctx.Write([]byte("数据错误"))
 		return
@@ -51,7 +50,7 @@ func init() {
 }
 func main() {
 
-	flag.Parse()
+	//flag.Parse()
 	num := runtime.NumCPU()
 	runtime.GOMAXPROCS(num)
 	cg := loop.NewEpollEventGroup(num)

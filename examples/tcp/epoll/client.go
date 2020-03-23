@@ -28,7 +28,7 @@ func main() {
 	g := loop.NewEpollEventGroup(1)
 	b := core.NewBootstrap().Group(g).Network("tcp").SocketChannel(epoll.NIOSocket).Handler(&ClientHandler{})
 
-	b.Bind("localhost:9001")
+	b.Bind("localhost:8080")
 
 	for i := 0; i < 10; i++ {
 		b.Channel().Write([]byte("hello"))

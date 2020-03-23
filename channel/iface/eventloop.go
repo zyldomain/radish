@@ -11,4 +11,6 @@ type EventLoop interface {
 	InEventLoop() bool
 	ID() int64
 	Shutdown()
+	AddPackage(ch Channel,pkg *Pkg)
+	RemoveChannel(ch Channel)
 }

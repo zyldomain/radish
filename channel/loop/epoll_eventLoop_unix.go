@@ -1,3 +1,5 @@
+// +build linux darwin netbsd freebsd openbsd dragonfly
+
 package loop
 
 import (
@@ -116,3 +118,7 @@ func (e *EpollEventLoop) Shutdown() {
 	//TODO释放selector
 	e.selector = nil
 }
+func (e *EpollEventLoop) AddPackage(ch Channel,pkg *epoll.Pkg){}
+
+func (e *EpollEventLoop)RemoveChannel(ch Channel){}
+

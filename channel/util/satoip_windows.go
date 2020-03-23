@@ -1,23 +1,21 @@
-// +build linux darwin netbsd freebsd openbsd dragonfly
+// +build windows
 
 package util
 
 import (
-	"golang.org/x/sys/unix"
+	"golang.org/x/sys/windows"
 	"net"
 )
 
-
-
-func SockaddrToTCPOrUnixAddr(sa unix.Sockaddr) net.Addr {
+func SockaddrToTCPOrUnixAddr(sa windows.Sockaddr) net.Addr {
 	switch sa := sa.(type) {
-	case *unix.SockaddrInet4:
+	case *windows.SockaddrInet4:
 		ip := sockaddrInet4ToIP(sa)
 		return &net.TCPAddr{IP: ip, Port: sa.Port}
-	case *unix.SockaddrInet6:
+	case *windows.SockaddrInet6:
 		ip, zone := sockaddrInet6ToIPAndZone(sa)
 		return &net.TCPAddr{IP: ip, Port: sa.Port, Zone: zone}
-	case *unix.SockaddrUnix:
+	case *windows.SockaddrUnix:
 		return &net.UnixAddr{Name: sa.Name, Net: "unix"}
 	}
 	return nil
@@ -25,12 +23,12 @@ func SockaddrToTCPOrUnixAddr(sa unix.Sockaddr) net.Addr {
 
 // SockaddrToUDPAddr converts a Sockaddr to a net.UDPAddr
 // Returns nil if conversion fails.
-func SockaddrToUDPAddr(sa unix.Sockaddr) *net.UDPAddr {
+func SockaddrToUDPAddr(sa windows.Sockaddr) *net.UDPAddr {
 	switch sa := sa.(type) {
-	case *unix.SockaddrInet4:
+	case *windows.SockaddrInet4:
 		ip := sockaddrInet4ToIP(sa)
 		return &net.UDPAddr{IP: ip, Port: sa.Port}
-	case *unix.SockaddrInet6:
+	case *windows.SockaddrInet6:
 		ip, zone := sockaddrInet6ToIPAndZone(sa)
 		return &net.UDPAddr{IP: ip, Port: sa.Port, Zone: zone}
 	}
@@ -39,7 +37,7 @@ func SockaddrToUDPAddr(sa unix.Sockaddr) *net.UDPAddr {
 
 // sockaddrInet4ToIPAndZone converts a SockaddrInet4 to a net.IP.
 // It returns nil if conversion fails.
-func sockaddrInet4ToIP(sa *unix.SockaddrInet4) net.IP {
+func sockaddrInet4ToIP(sa *windows.SockaddrInet4) net.IP {
 	ip := make([]byte, 16)
 	// V4InV6Prefix
 	ip[10] = 0xff
@@ -50,7 +48,7 @@ func sockaddrInet4ToIP(sa *unix.SockaddrInet4) net.IP {
 
 // sockaddrInet6ToIPAndZone converts a SockaddrInet6 to a net.IP with IPv6 Zone.
 // It returns nil if conversion fails.
-func sockaddrInet6ToIPAndZone(sa *unix.SockaddrInet6) (net.IP, string) {
+func sockaddrInet6ToIPAndZone(sa *windows.SockaddrInet6) (net.IP, string) {
 	ip := make([]byte, 16)
 	copy(ip, sa.Addr[:])
 	return ip, ip6ZoneToString(int(sa.ZoneId))
@@ -83,3 +81,4 @@ func int2decimal(i uint) string {
 	}
 	return string(b[bp:])
 }
+

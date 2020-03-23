@@ -1,6 +1,7 @@
 package epoll
 
 import (
+	"errors"
 	"net"
 	"radish/channel"
 	"radish/channel/iface"
@@ -17,19 +18,30 @@ func init() {
 	channel.SetChannel("NIOServerSocket", NewNIOServerSocketChannel)
 }
 
-func NewNIOServerSocketChannel(network string, address string, fd int) iface.Channel {
+func NewNIOServerSocketChannel(conn interface{},network string, address string, fd interface{}) iface.Channel {
 
+	var c net.Conn
+	var ok bool
+	if conn != nil{
+		c, ok = conn.(net.Conn)
+
+		if !ok {
+			panic(errors.New("wrong type"))
+		}
+	}
 	ln, _ := net.Listen(network, address)
 	//fd, err := unix.Socket(syscall.AF_INET, syscall.SOCK_STREAM, 0)
 	l, _ := ln.(*net.TCPListener)
 	f, _ := l.File()
 
 	epchannel := &NIOSocketChannel{
-		fd:      int(f.Fd()),
+		FDE:&FDE{fd:GetFD(f.Fd())},
 		network: network,
 		address: address,
 		f:       f,
 		ln:      ln,
+		msg:make(chan *iface.Pkg, 1000),
+		conn:c,
 	}
 
 	ssChannel := &NIOServerSocketChannel{
@@ -40,3 +52,4 @@ func NewNIOServerSocketChannel(network string, address string, fd int) iface.Cha
 
 	return ssChannel
 }
+

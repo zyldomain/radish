@@ -1,7 +1,6 @@
 package core
 
 import (
-	"golang.org/x/sys/unix"
 	"radish/channel"
 	"radish/channel/iface"
 	"sync"
@@ -72,7 +71,7 @@ func (b *Bootstrap) initAndRegisterChannel(address string) {
 		c.Pipeline().AddLast(b.handler)
 	}
 	b.channel = c
-	b.group.Next().Register(c, []int16{unix.EVFILT_READ | unix.EVFILT_WRITE})
+	b.group.Next().Register(c)
 }
 
 func (b *Bootstrap) Channel() iface.Channel {

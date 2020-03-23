@@ -15,4 +15,6 @@ type Channel interface {
 	Pipeline() Pipeline
 
 	SetEventLoop(eventLoop EventLoop)
+
+	SetNonBolcking()
 }

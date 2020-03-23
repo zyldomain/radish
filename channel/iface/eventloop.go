@@ -7,7 +7,7 @@ import (
 type EventLoop interface {
 	StartWork()
 	AddTask(task *util.Task)
-	Register(channel Channel, interests []int16)
+	Register(channel Channel)
 	InEventLoop() bool
 	ID() int64
 	Shutdown()

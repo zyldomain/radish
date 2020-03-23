@@ -5,6 +5,8 @@ import (
 	"net"
 )
 
+// +build linux darwin netbsd freebsd openbsd dragonfly
+
 func SockaddrToTCPOrUnixAddr(sa unix.Sockaddr) net.Addr {
 	switch sa := sa.(type) {
 	case *unix.SockaddrInet4:

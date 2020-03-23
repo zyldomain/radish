@@ -1,3 +1,5 @@
+//+build  darwin netbsd freebsd openbsd dragonfly
+
 package iface
 
 type Key struct {

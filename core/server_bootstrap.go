@@ -2,7 +2,6 @@ package core
 
 import (
 	"errors"
-	"golang.org/x/sys/unix"
 	"radish/channel"
 	"radish/channel/iface"
 	"strings"
@@ -81,7 +80,7 @@ func (b *ServerBootstrap) initAndRegisterChannel(address string) {
 	}
 	ssc.Pipeline().AddLast(channel.NewServerSocketAccptor(b.childHandler, b.childGroup))
 
-	b.parentGroup.Next().Register(ssc, []int16{unix.EVFILT_READ})
+	b.parentGroup.Next().Register(ssc)
 }
 
 func (b *ServerBootstrap) NetWrok(name string) *ServerBootstrap {

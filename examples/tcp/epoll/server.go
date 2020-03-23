@@ -1,8 +1,8 @@
 package main
 
 import (
+	"flag"
 	"fmt"
-	"net/http"
 	_ "net/http/pprof"
 	"radish/channel/epoll"
 	"radish/channel/iface"
@@ -44,12 +44,16 @@ func (p *ConvertHandler) ChannelRead(ctx iface.ChannelHandlerContextInvoker, msg
 
 }
 
+var address string
+
+func init() {
+	flag.StringVar(&address, "addr", "localhost:8080", "-addr localhost:8080")
+}
 func main() {
+
+	flag.Parse()
 	num := runtime.NumCPU()
 	runtime.GOMAXPROCS(num)
-	go func() {
-		http.ListenAndServe("localhost:8999", nil)
-	}()
 	cg := loop.NewEpollEventGroup(num)
 	pg := loop.NewEpollEventGroup(1)
 
@@ -63,6 +67,6 @@ func main() {
 				pipeline.AddLast(&PrintHandler{})
 				pipeline.AddLast(&ConvertHandler{})
 			}))
-	b.Bind("localhost:9001").Sync()
+	b.Bind("localhost:8080").Sync()
 
 }

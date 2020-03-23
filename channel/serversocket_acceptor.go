@@ -1,7 +1,6 @@
 package channel
 
 import (
-	"golang.org/x/sys/unix"
 	"radish/channel/iface"
 	"radish/channel/pipeline"
 )
@@ -39,5 +38,5 @@ func (ssa *ServerSocketAcceptor) initChannel(sc iface.Channel) {
 		sc.Pipeline().AddLast(ssa.childHandler)
 	}
 
-	ssa.childGroup.Next().Register(sc, []int16{unix.EVFILT_READ | unix.EVFILT_WRITE})
+	ssa.childGroup.Next().Register(sc)
 }

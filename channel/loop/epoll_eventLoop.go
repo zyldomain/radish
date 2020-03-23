@@ -2,17 +2,10 @@ package loop
 
 import (
 	"fmt"
-	"golang.org/x/sys/unix"
 	"radish/channel/iface"
 	"radish/channel/selector"
 	"radish/channel/util"
 	"sync"
-	"time"
-)
-
-const (
-	MillionSecond = int64(time.Nanosecond) * 1000000
-	Second        = MillionSecond * 1000
 )
 
 type EpollEventLoop struct {
@@ -28,7 +21,7 @@ type EpollEventLoop struct {
 }
 
 func NewEpollEventLoop(id int64) (*EpollEventLoop, error) {
-	s, err := selector.OpenEpollSelector()
+	s, err := selector.OpenSelector()
 	if err != nil {
 		return nil, err
 	}
@@ -48,7 +41,7 @@ func (e *EpollEventLoop) StartWork() {
 	e.stop = false
 
 	if e.selector == nil {
-		s, err := selector.OpenEpollSelector()
+		s, err := selector.OpenSelector()
 		if err != nil {
 			panic(err)
 		}
@@ -59,9 +52,7 @@ func (e *EpollEventLoop) StartWork() {
 	go func() {
 		for e.running {
 			e.runAllTasks()
-			//time.Sleep(10 * time.Millisecond)
-			tt := unix.NsecToTimespec(MillionSecond / 10)
-			keys, err := e.selector.SelectWithTimeout(&tt)
+			keys, err := e.selector.SelectWithTimeout(util.MillionSecond / 10)
 			if err != nil {
 				//e.reBuildSelector()
 				fmt.Println("1异常断开", e.id)
@@ -91,44 +82,16 @@ func (e *EpollEventLoop) AddTask(task *util.Task) {
 	e.tasks.Add(task)
 }
 
-func (e *EpollEventLoop) processKeys(keys []iface.Key) {
-	for _, key := range keys {
-		if key.Flags&unix.EV_ERROR != 0 || key.Flags&unix.EV_EOF != 0 {
-			unix.Close(key.Channel.FD())
-			continue
-		}
-		if key.Filter == unix.EVFILT_READ {
-
-			key.Channel.Unsafe().Read(e.objList)
-			for _, o := range e.objList.Iterator() {
-				key.Channel.Read(o)
-			}
-
-			e.objList.RemoveAll()
-			if key.Channel.FD() == 9 {
-				//e.selector.RemoveInterests(key.Channel, key.Filter)
-
-			}
-		}
-
-		if key.Filter == unix.EVFILT_WRITE {
-			//TODO
-		}
-
-	}
-}
-
-func (e *EpollEventLoop) Register(channel iface.Channel, interests []int16) {
+func (e *EpollEventLoop) Register(channel iface.Channel) {
 
 	channel.SetEventLoop(e)
 	doRegister := func() {
-		unix.SetNonblock(channel.FD(), true)
-		for _, filter := range interests {
-			e.selector.AddInterests(channel, filter)
-		}
+		channel.SetNonBolcking()
+		e.selector.AddRead(channel)
 	}
 
 	if e.InEventLoop() {
+
 		doRegister()
 	} else {
 		if !e.running {
@@ -136,10 +99,6 @@ func (e *EpollEventLoop) Register(channel iface.Channel, interests []int16) {
 		}
 		e.AddTask(util.NewTask(doRegister))
 	}
-
-}
-
-func (e *EpollEventLoop) reBuildSelector() {
 
 }
 

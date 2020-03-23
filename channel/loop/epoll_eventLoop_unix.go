@@ -118,7 +118,6 @@ func (e *EpollEventLoop) Shutdown() {
 	//TODO释放selector
 	e.selector = nil
 }
-func (e *EpollEventLoop) AddPackage(ch Channel,pkg *epoll.Pkg){}
+func (e *EpollEventLoop) AddPackage(ch iface.Channel, pkg *iface.Pkg) {}
 
-func (e *EpollEventLoop)RemoveChannel(ch Channel){}
-
+func (e *EpollEventLoop) RemoveChannel(ch iface.Channel) {}

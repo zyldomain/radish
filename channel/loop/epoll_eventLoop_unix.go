@@ -1,3 +1,5 @@
+//+build  linux darwin netbsd freebsd openbsd dragonfly
+
 package loop
 
 import (

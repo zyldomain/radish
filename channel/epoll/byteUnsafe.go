@@ -8,7 +8,7 @@ import (
 
 var pool = sync.Pool{
 	New: func() interface{} {
-		return make([]byte, 32)
+		return make([]byte, 4096)
 	},
 }
 
@@ -33,4 +33,9 @@ func (b *ByteUnsafe) Write(msg interface{}) (int, error) {
 func (b *ByteUnsafe) Bind(address string) {
 	c, _ := b.channel.(AbstractChannel)
 	c.bind(address)
+}
+
+func (b *ByteUnsafe) Close() {
+	c, _ := b.channel.(AbstractChannel)
+	c.close()
 }

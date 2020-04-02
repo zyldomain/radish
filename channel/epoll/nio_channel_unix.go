@@ -12,19 +12,17 @@ import (
 func (ec *NIOSocketChannel) doReadMessages(links *util.ArrayList) {
 	buf := pool.Get().([]byte)
 	for {
+		//buf := make([]byte, 4096)
 		n, err := unix.Read(ec.fd, buf)
-		if err != nil || n == 0 {
+		if err != nil || n == 0 || buf[n-1] == 4 {
 			if err == unix.EAGAIN {
 				return
 			}
-			return
-
-			unix.Close(ec.fd)
+			ec.Close()
 			return
 		}
-		tmp := make([]byte, n)
-		copy(tmp, buf)
-		links.Add(tmp)
+
+		links.Add(buf[:n])
 	}
 
 	pool.Put(buf)
@@ -54,4 +52,11 @@ func (ec *NIOSocketChannel) bind(address string) {
 
 func (ec *NIOSocketChannel) SetNonBolcking() {
 	unix.SetNonblock(ec.fd, true)
+}
+
+func (ec *NIOSocketChannel) close() {
+
+	ec.active = false
+	unix.Close(ec.fd)
+	ec.pipeline.ChannelInActive(ec)
 }

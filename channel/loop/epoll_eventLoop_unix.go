@@ -90,6 +90,8 @@ func (e *EpollEventLoop) Register(channel iface.Channel) {
 	doRegister := func() {
 		channel.SetNonBolcking()
 		e.selector.AddRead(channel)
+		channel.SetActive()
+		channel.Pipeline().ChannelActive(channel)
 	}
 
 	if e.InEventLoop() {

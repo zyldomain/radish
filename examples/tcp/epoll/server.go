@@ -17,30 +17,11 @@ type PrintHandler struct {
 }
 
 func (p *PrintHandler) ChannelRead(ctx iface.ChannelHandlerContextInvoker, msg interface{}) {
-	b, ok := msg.([]byte)
-	if !ok {
-		ctx.Write([]byte("数据错误"))
-		return
-	}
-
-	fmt.Println("客户端发送消息-> " + string(b))
-	ctx.FireChannelRead(msg)
+	ctx.Write(msg)
 }
 
-type ConvertHandler struct {
-	pipeline.ChannelInboundHandlerAdapter
-}
-
-func (p *ConvertHandler) ChannelRead(ctx iface.ChannelHandlerContextInvoker, msg interface{}) {
-	b, ok := msg.([]byte)
-
-	if !ok {
-		ctx.Write([]byte("数据错误"))
-		return
-	}
-
-	ctx.Write([]byte(string(b)))
-
+func (p *PrintHandler) ChannelInActive(ctx iface.ChannelHandlerContextInvoker, msg interface{}) {
+	fmt.Println("down")
 }
 
 var address string
@@ -53,18 +34,17 @@ func main() {
 	//flag.Parse()
 	num := runtime.NumCPU()
 	runtime.GOMAXPROCS(num)
-	cg := loop.NewEpollEventGroup(num)
+	cg := loop.NewEpollEventGroup(1)
 	pg := loop.NewEpollEventGroup(1)
 
 	b := core.NewServerBootstrap().
 		ServerSocketChannel(epoll.NIOServerSocket).
 		NetWrok("tcp").
-		ParentGroup(cg).
-		ChildGroup(pg).
+		ParentGroup(pg).
+		ChildGroup(cg).
 		ChildHandler(pipeline.NewChannelInitializer(
 			func(pipeline iface.Pipeline) {
 				pipeline.AddLast(&PrintHandler{})
-				pipeline.AddLast(&ConvertHandler{})
 			}))
 	b.Bind("localhost:8080").Sync()
 

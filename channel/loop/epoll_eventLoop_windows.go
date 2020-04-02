@@ -19,7 +19,7 @@ type EpollEventLoop struct {
 	stop     bool
 	running  bool
 
-	lock *sync.RWMutex
+	lock  *sync.RWMutex
 	tlock sync.Mutex
 
 	channelPkg map[iface.Channel]chan *iface.Pkg
@@ -31,15 +31,15 @@ func NewEpollEventLoop(id int64) (*EpollEventLoop, error) {
 		return nil, err
 	}
 	return &EpollEventLoop{
-		selector: s,
-		tasks:    util.NewTaskList(),
-		ttasks:   util.NewTaskList(),
-		objList:  util.NewArrayList(),
-		stop:     true,
-		running:  false,
-		id:       id,
-		channelPkg:make(map[iface.Channel]chan *iface.Pkg),
-		lock:&sync.RWMutex{},
+		selector:   s,
+		tasks:      util.NewTaskList(),
+		ttasks:     util.NewTaskList(),
+		objList:    util.NewArrayList(),
+		stop:       true,
+		running:    false,
+		id:         id,
+		channelPkg: make(map[iface.Channel]chan *iface.Pkg),
+		lock:       &sync.RWMutex{},
 	}, err
 }
 
@@ -60,20 +60,20 @@ func (e *EpollEventLoop) StartWork() {
 
 			e.runAllTasks()
 			e.lock.RLock()
-			for c, ch := range e.channelPkg{
+			for c, ch := range e.channelPkg {
 				stop := false
-				for !stop{
+				for !stop {
 					select {
 					case p := <-ch:
-						if p.Event == iface.READ ||  p.Event == iface.CONNECTED {
+						if p.Event == iface.READ || p.Event == iface.CONNECTED {
 							c.Read(p.Data)
-						}else if p.Event == iface.CLOSED {
+						} else if p.Event == iface.CLOSED {
 							subc, ok := p.Data.(iface.Channel)
 							if !ok {
 								panic("wrong type")
 							}
 							e.RemoveChannel(subc)
-						}else if p.Event == iface.WRITE {
+						} else if p.Event == iface.WRITE {
 							crw, ok := c.(iface.ChannelRW)
 							if !ok {
 								panic("wrong type")
@@ -115,8 +115,7 @@ func (e *EpollEventLoop) Register(channel iface.Channel) {
 	channel.SetEventLoop(e)
 	e.lock.Lock()
 
-	e.channelPkg[channel] = make(chan *iface.Pkg,1000)
-
+	e.channelPkg[channel] = make(chan *iface.Pkg, 1000)
 
 	c, ok := channel.(iface.ChannelRW)
 
@@ -128,6 +127,8 @@ func (e *EpollEventLoop) Register(channel iface.Channel) {
 	go c.ReadLoop()
 
 	doRegister := func() {
+		channel.SetActive()
+		channel.Pipeline().ChannelActive(channel)
 	}
 
 	if e.InEventLoop() {
@@ -157,21 +158,20 @@ func (e *EpollEventLoop) Shutdown() {
 	e.selector = nil
 }
 
-func (e *EpollEventLoop) AddPackage(c iface.Channel, pkg *iface.Pkg){
+func (e *EpollEventLoop) AddPackage(c iface.Channel, pkg *iface.Pkg) {
 	e.lock.RLock()
 	ch, ok := e.channelPkg[c]
 
-	if !ok{
+	if !ok {
 		panic("unkown error")
 	}
 	e.lock.RUnlock()
 
-
 	ch <- pkg
 }
-func (e *EpollEventLoop)RemoveChannel(ch iface.Channel){
+func (e *EpollEventLoop) RemoveChannel(ch iface.Channel) {
 	e.lock.Lock()
-	delete(e.channelPkg,ch)
+	delete(e.channelPkg, ch)
 
 	e.lock.Unlock()
 }

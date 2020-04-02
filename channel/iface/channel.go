@@ -18,4 +18,7 @@ type Channel interface {
 
 	SetNonBolcking()
 
+	Close()
+
+	SetActive()
 }

@@ -58,6 +58,19 @@ func (c *ChannelHandlerContext) FireChannelActive(msg interface{}) {
 	c.invokeChannelActive(c.findInbound(), msg)
 }
 
+func (c *ChannelHandlerContext) FireChannelUserEventTrigger(msg interface{}) {
+	c.invokeChannelUserEventTrigger(c.findInbound(), msg)
+}
+
+func (c *ChannelHandlerContext) invokeChannelUserEventTrigger(ctx iface.ChannelHandlerContextInvoker, msg interface{}) {
+	handler, ok := ctx.Handler().(iface.ChannelInboundHandler)
+	if !ok {
+		panic(errors.New("handler execute failed"))
+	}
+
+	handler.UserEventTrigger(ctx, msg)
+}
+
 func (c *ChannelHandlerContext) invokeChannelActive(ctx iface.ChannelHandlerContextInvoker, msg interface{}) {
 	handler, ok := ctx.Handler().(iface.ChannelInboundHandler)
 
@@ -131,4 +144,21 @@ func (c *ChannelHandlerContext) RemoveSelf() {
 	c.prev.next = c.next
 	c.prev = nil
 	c.next = nil
+}
+
+func (c *ChannelHandlerContext) Channel() iface.Channel {
+	return c.pipeline.Channel()
+}
+func (c *ChannelHandlerContext) Close() {
+	c.invokeClose(c.findOutbound())
+}
+
+func (c *ChannelHandlerContext) invokeClose(ctx iface.ChannelHandlerContextInvoker) {
+	handler, ok := ctx.Handler().(iface.ChannelOutboundHandler)
+
+	if !ok {
+		panic(errors.New("handler execute failed"))
+	}
+
+	handler.Close(ctx)
 }

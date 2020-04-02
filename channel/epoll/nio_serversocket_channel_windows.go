@@ -59,3 +59,10 @@ func (ssc *NIOServerSocketChannel) WiteLoop() {
 
 func (ssc *NIOServerSocketChannel) AddWriteMsg(pkg *iface.Pkg) {
 }
+
+func (ssc *NIOServerSocketChannel) close() {
+	ssc.active = false
+	ssc.conn.Close()
+	ssc.eventloop.RemoveChannel(ssc)
+	ssc.pipeline.ChannelInActive(ssc)
+}

@@ -5,6 +5,7 @@ import (
 )
 
 type HeadHandler struct {
+	ChannelOutboundHandlerAdapter
 	unsafe iface.Unsafe
 }
 
@@ -28,4 +29,7 @@ func (h *HeadHandler) Write(ctx iface.ChannelHandlerContextInvoker, msg interfac
 
 func (h *HeadHandler) Bind(ctx iface.ChannelHandlerContextInvoker, address string) {
 	h.unsafe.Bind(address)
+}
+func (h *HeadHandler) Close(ctx iface.ChannelHandlerContextInvoker) {
+	h.unsafe.Close()
 }

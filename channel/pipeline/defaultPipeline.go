@@ -73,3 +73,7 @@ func (d *DefaultChannelPipeline) ChannelActive(msg interface{}) {
 func (d *DefaultChannelPipeline) ChannelInActive(msg interface{}) {
 	d.head.FireChannelInActive(msg)
 }
+
+func (d *DefaultChannelPipeline) Close() {
+	d.tail.Close()
+}

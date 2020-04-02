@@ -20,3 +20,6 @@ func (a *ChannelInboundHandlerAdapter) ChannelHandlerAdded(ctx iface.ChannelHand
 func (a *ChannelInboundHandlerAdapter) ChannelHandlerRemoved(ctx iface.ChannelHandlerContextInvoker) {
 
 }
+func (a *ChannelInboundHandlerAdapter) UserEventTrigger(ctx iface.ChannelHandlerContextInvoker, msg interface{}) {
+	ctx.FireChannelUserEventTrigger(msg)
+}

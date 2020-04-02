@@ -29,10 +29,10 @@ func init() {
 	channel.SetChannel("NIOSocket", NewNIOSocketChannel)
 }
 
-func NewNIOSocketChannel(conn interface{},network string, address string, fd interface{}) iface.Channel {
+func NewNIOSocketChannel(conn interface{}, network string, address string, fd interface{}) iface.Channel {
 	var c net.Conn
 	var ok bool
-	if conn != nil{
+	if conn != nil {
 		c, ok = conn.(net.Conn)
 
 		if !ok {
@@ -40,11 +40,11 @@ func NewNIOSocketChannel(conn interface{},network string, address string, fd int
 		}
 	}
 	epchannel := &NIOSocketChannel{
-		FDE:&FDE{fd:GetFD(fd)},
+		FDE:     &FDE{fd: GetFD(fd)},
 		network: network,
 		address: address,
-		msg :make(chan *iface.Pkg, 1000),
-		conn:c,
+		msg:     make(chan *iface.Pkg, 1000),
+		conn:    c,
 	}
 
 	epchannel.unsafe = NewByteUnsafe(epchannel)
@@ -77,7 +77,6 @@ func NewNIOSocketChannel(conn interface{},network string, address string, fd int
 
 	return epchannel
 }
-
 
 func (ec *NIOSocketChannel) Read(msg interface{}) {
 	ec.pipeline.ChannelRead(msg)
@@ -116,4 +115,10 @@ func (ec *NIOSocketChannel) SetEventLoop(eventLoop iface.EventLoop) {
 
 func (ec *NIOSocketChannel) EventLoop() iface.EventLoop {
 	return ec.eventloop
+}
+func (ec *NIOSocketChannel) SetActive() {
+	ec.active = true
+}
+func (ec *NIOSocketChannel) Close() {
+	ec.pipeline.Close()
 }

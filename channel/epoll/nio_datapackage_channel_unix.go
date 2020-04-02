@@ -45,3 +45,8 @@ func (ec *NIODataPackageChannel) bind(address string) {
 func (ec *NIODataPackageChannel) SetNonBolcking() {
 	unix.SetNonblock(ec.fd, true)
 }
+func (ec *NIODataPackageChannel) close() {
+	ec.active = false
+	unix.Close(ec.fd)
+	ec.pipeline.ChannelInActive(ec)
+}

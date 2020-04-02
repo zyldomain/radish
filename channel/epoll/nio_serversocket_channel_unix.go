@@ -20,7 +20,7 @@ func (ssc *NIOServerSocketChannel) doReadMessages(links *util.ArrayList) {
 			}
 
 		}
-		c := NewNIOSocketChannel(nil,ssc.network, addr.String(), nfd)
+		c := NewNIOSocketChannel(nil, ssc.network, addr.String(), nfd)
 
 		links.Add(c)
 	}
@@ -45,4 +45,10 @@ func (ssc *NIOServerSocketChannel) bind(address string) {
 func (ssc *NIOServerSocketChannel) SetNonBlocking() {
 	unix.SetNonblock(ssc.fd, true)
 
+}
+
+func (ssc *NIOServerSocketChannel) close() {
+	ssc.active = false
+	unix.Close(ssc.fd)
+	ssc.pipeline.ChannelInActive(ssc)
 }

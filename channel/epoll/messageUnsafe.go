@@ -28,3 +28,8 @@ func (u *MessageUnsafe) Bind(address string) {
 	c, _ := u.channel.(AbstractChannel)
 	c.bind(address)
 }
+
+func (u *MessageUnsafe) Close() {
+	c, _ := u.channel.(AbstractChannel)
+	c.close()
+}

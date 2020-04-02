@@ -9,4 +9,5 @@ type Pipeline interface {
 	Bind(address string)
 	ChannelActive(msg interface{})
 	ChannelInActive(msg interface{})
+	Close()
 }

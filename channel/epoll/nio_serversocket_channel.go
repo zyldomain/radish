@@ -18,11 +18,11 @@ func init() {
 	channel.SetChannel("NIOServerSocket", NewNIOServerSocketChannel)
 }
 
-func NewNIOServerSocketChannel(conn interface{},network string, address string, fd interface{}) iface.Channel {
+func NewNIOServerSocketChannel(conn interface{}, network string, address string, fd interface{}) iface.Channel {
 
 	var c net.Conn
 	var ok bool
-	if conn != nil{
+	if conn != nil {
 		c, ok = conn.(net.Conn)
 
 		if !ok {
@@ -35,13 +35,13 @@ func NewNIOServerSocketChannel(conn interface{},network string, address string, 
 	f, _ := l.File()
 
 	epchannel := &NIOSocketChannel{
-		FDE:&FDE{fd:GetFD(f.Fd())},
+		FDE:     &FDE{fd: GetFD(f.Fd())},
 		network: network,
 		address: address,
 		f:       f,
 		ln:      ln,
-		msg:make(chan *iface.Pkg, 1000),
-		conn:c,
+		msg:     make(chan *iface.Pkg, 1000),
+		conn:    c,
 	}
 
 	ssChannel := &NIOServerSocketChannel{
@@ -52,4 +52,3 @@ func NewNIOServerSocketChannel(conn interface{},network string, address string, 
 
 	return ssChannel
 }
-

@@ -9,4 +9,6 @@ type ChannelHandlerContextInvoker interface {
 	FireChannelRead(msg interface{})
 	Write(msg interface{})
 	RemoveSelf()
+	FireChannelUserEventTrigger(msg interface{})
+	Channel() Channel
 }

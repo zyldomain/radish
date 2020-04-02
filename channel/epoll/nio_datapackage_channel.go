@@ -25,13 +25,13 @@ type NIODataPackageChannel struct {
 	network   string
 	f         *os.File
 	conn      net.PacketConn
-	msg chan *iface.Pkg
+	msg       chan *iface.Pkg
 }
 
-func NewNIODataPackageChannel(conn interface{},network string, address string, fd interface{}) iface.Channel {
+func NewNIODataPackageChannel(conn interface{}, network string, address string, fd interface{}) iface.Channel {
 	var pc net.PacketConn
 	var ok bool
-	if conn != nil{
+	if conn != nil {
 		pc, ok = conn.(net.PacketConn)
 
 		if !ok {
@@ -39,11 +39,11 @@ func NewNIODataPackageChannel(conn interface{},network string, address string, f
 		}
 	}
 	np := &NIODataPackageChannel{
-		FDE:&FDE{fd:GetFD(fd)},
+		FDE:     &FDE{fd: GetFD(fd)},
 		address: address,
 		network: network,
-		msg:make(chan *iface.Pkg,1000),
-		conn:pc,
+		msg:     make(chan *iface.Pkg, 1000),
+		conn:    pc,
 	}
 
 	if GetFD(fd) == 0 {
@@ -69,8 +69,6 @@ func NewNIODataPackageChannel(conn interface{},network string, address string, f
 
 		np.conn = pconn
 
-
-
 		np.fd = GetFD(1)
 
 	}
@@ -79,7 +77,6 @@ func NewNIODataPackageChannel(conn interface{},network string, address string, f
 
 	return np
 }
-
 
 func (ec *NIODataPackageChannel) Read(msg interface{}) {
 	ec.pipeline.ChannelRead(msg)
@@ -118,4 +115,11 @@ func (ec *NIODataPackageChannel) SetEventLoop(eventLoop iface.EventLoop) {
 
 func (ec *NIODataPackageChannel) EventLoop() iface.EventLoop {
 	return ec.eventloop
+}
+func (ec *NIODataPackageChannel) SetActive() {
+	ec.active = true
+}
+
+func (ec *NIODataPackageChannel) Close() {
+	ec.pipeline.Close()
 }

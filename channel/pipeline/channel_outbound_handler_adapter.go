@@ -19,9 +19,7 @@ func (a *ChannelOutboundHandlerAdapter) ChannelHandlerAdded(ctx iface.ChannelHan
 func (a *ChannelOutboundHandlerAdapter) ChannelHandlerRemoved(ctx iface.ChannelHandlerContextInvoker) {
 
 }
-func (a *ChannelOutboundHandlerAdapter) UserEventTrigger(ctx iface.ChannelHandlerContextInvoker, msg interface{}) {
 
-}
 func (a *ChannelOutboundHandlerAdapter) Close(ctx iface.ChannelHandlerContextInvoker) {
-
+	ctx.Close()
 }

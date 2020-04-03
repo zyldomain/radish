@@ -28,6 +28,3 @@ func (h *TailHandler) ChannelActive(ctx iface.ChannelHandlerContextInvoker, msg 
 func (h *TailHandler) ChannelInActive(ctx iface.ChannelHandlerContextInvoker, msg interface{}) {
 
 }
-
-func (a *TailHandler) UserEventTrigger(ctx iface.ChannelHandlerContextInvoker, msg interface{}) {
-}

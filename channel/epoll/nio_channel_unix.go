@@ -14,7 +14,7 @@ func (ec *NIOSocketChannel) doReadMessages(links *util.ArrayList) {
 	for {
 		//buf := make([]byte, 4096)
 		n, err := unix.Read(ec.fd, buf)
-		if err != nil || n == 0 || buf[n-1] == 4 {
+		if err != nil || n == 0 {
 			if err == unix.EAGAIN {
 				return
 			}

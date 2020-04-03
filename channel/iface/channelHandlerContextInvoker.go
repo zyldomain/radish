@@ -11,4 +11,5 @@ type ChannelHandlerContextInvoker interface {
 	RemoveSelf()
 	FireChannelUserEventTrigger(msg interface{})
 	Channel() Channel
+	Close()
 }

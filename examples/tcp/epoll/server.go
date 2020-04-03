@@ -24,6 +24,15 @@ func (p *PrintHandler) ChannelInActive(ctx iface.ChannelHandlerContextInvoker, m
 	fmt.Println("down")
 }
 
+type CloseHandler struct {
+	pipeline.ChannelOutboundHandlerAdapter
+}
+
+func (a *CloseHandler) Close(ctx iface.ChannelHandlerContextInvoker) {
+	fmt.Println("close")
+	ctx.Close()
+}
+
 var address string
 
 func init() {
@@ -44,7 +53,7 @@ func main() {
 		ChildGroup(cg).
 		ChildHandler(pipeline.NewChannelInitializer(
 			func(pipeline iface.Pipeline) {
-				pipeline.AddLast(&PrintHandler{})
+				pipeline.AddLast(&PrintHandler{}).AddLast(&CloseHandler{})
 			}))
 	b.Bind("localhost:8080").Sync()
 

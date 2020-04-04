@@ -17,6 +17,9 @@ type PrintHandler struct {
 }
 
 func (p *PrintHandler) ChannelRead(ctx iface.ChannelHandlerContextInvoker, msg interface{}) {
+	m, _ := msg.([]byte)
+
+	fmt.Println(string(m))
 	ctx.Write(msg)
 }
 

@@ -21,6 +21,7 @@ type NIOSocketChannel struct {
 	conn      net.Conn
 	ln        net.Listener
 	msg       chan *iface.Pkg
+	id        string
 }
 
 const NIOSocket = "NIOSocket"
@@ -121,4 +122,11 @@ func (ec *NIOSocketChannel) SetActive() {
 }
 func (ec *NIOSocketChannel) Close() {
 	ec.pipeline.Close()
+}
+func (ec *NIOSocketChannel) SetID(id string) {
+	ec.id = id
+}
+
+func (ec *NIOSocketChannel) GetID() string {
+	return ec.id
 }

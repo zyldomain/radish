@@ -21,4 +21,7 @@ type Channel interface {
 	Close()
 
 	SetActive()
+
+	SetID(id string)
+	GetID() string
 }

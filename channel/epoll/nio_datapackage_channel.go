@@ -26,6 +26,7 @@ type NIODataPackageChannel struct {
 	f         *os.File
 	conn      net.PacketConn
 	msg       chan *iface.Pkg
+	id        string
 }
 
 func NewNIODataPackageChannel(conn interface{}, network string, address string, fd interface{}) iface.Channel {
@@ -122,4 +123,11 @@ func (ec *NIODataPackageChannel) SetActive() {
 
 func (ec *NIODataPackageChannel) Close() {
 	ec.pipeline.Close()
+}
+func (ec *NIODataPackageChannel) SetID(id string) {
+	ec.id = id
+}
+
+func (ec *NIODataPackageChannel) GetID() string {
+	return ec.id
 }

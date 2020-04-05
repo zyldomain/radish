@@ -63,12 +63,13 @@ func (es *KqueueSelector) RemoveReadWrite(channel iface.Channel) {
 func (es *KqueueSelector) AddInterests(channel iface.Channel, filters int16) error {
 	es.eplock.Lock()
 	if _, ok := es.fd_channel[channel.FD()]; !ok {
-		es.fd_channel[channel.FD()] = channel
+
 		es.size++
 		if es.size > len(es.events) {
 			es.events = make([]unix.Kevent_t, 2*es.size)
 		}
 	}
+	es.fd_channel[channel.FD()] = channel
 	es.eplock.Unlock()
 	_, err := unix.Kevent(es.epfd, []unix.Kevent_t{{Ident: uint64(channel.FD()), Filter: filters, Flags: unix.EV_ADD}}, nil, nil)
 

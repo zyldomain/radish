@@ -54,7 +54,7 @@ func NewNIODataPackageChannel(conn interface{}, network string, address string, 
 			panic(err)
 		}
 
-		/*uconn, ok := pconn.(*net.UDPConn)
+		uconn, ok := pconn.(*net.UDPConn)
 
 		if !ok {
 			panic(errors.New("unknown error"))
@@ -66,11 +66,10 @@ func NewNIODataPackageChannel(conn interface{}, network string, address string, 
 			panic(err)
 		}
 		np.f = f
-		*/
 
 		np.conn = pconn
 
-		np.fd = GetFD(1)
+		np.fd = GetFD(f.Fd())
 
 	}
 	np.unsafe = NewByteUnsafe(np)

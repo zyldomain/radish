@@ -58,20 +58,20 @@ func NewNIOSocketChannel(conn interface{}, network string, address string, fd in
 			panic(err)
 		}
 
-		/*tc, ok := conn.(*net.TCPConn)
+		tc, ok := conn.(*net.TCPConn)
 
 		if !ok {
 			panic(errors.New("network error"))
-		}*/
+		}
 
-		/*f, err := tc.File()
+		f, err := tc.File()
 
 		if err != nil {
 			panic(err)
 		}
 
-		epchannel.f = f*/
-		epchannel.fd = GetFD(1)
+		epchannel.f = f
+		epchannel.fd = GetFD(f.Fd())
 
 		epchannel.conn = conn
 	}

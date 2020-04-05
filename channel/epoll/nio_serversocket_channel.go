@@ -29,10 +29,21 @@ func NewNIOServerSocketChannel(conn interface{}, network string, address string,
 			panic(errors.New("wrong type"))
 		}
 	}
-	ln, _ := net.Listen(network, address)
+	ln, err := net.Listen(network, address)
+
+	if err != nil {
+		panic(err)
+	}
 	//fd, err := unix.Socket(syscall.AF_INET, syscall.SOCK_STREAM, 0)
-	l, _ := ln.(*net.TCPListener)
-	f, _ := l.File()
+	l, ok := ln.(*net.TCPListener)
+	if !ok {
+		panic(errors.New("network error"))
+	}
+
+	f, err := l.File()
+	if err != nil {
+		panic(err)
+	}
 
 	epchannel := &NIOSocketChannel{
 		FDE:     &FDE{fd: GetFD(f.Fd())},
